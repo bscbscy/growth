@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>完美人生系统</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="完美人生">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --card2: #1c222b;
+    --border: #30363d;
+    --text: #e6edf3;
+    --dim: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --gold: #ffd33d;
+    --accent-body: #ff6b6b;
+    --accent-know: #4dabf7;
+    --accent-skill: #b197fc;
+    --accent-charm: #f783ac;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #1a2029, #14181f);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    position: sticky;
+    top: 8px;
+    z-index: 10;
+    box-shadow: 0 6px 24px rgba(0,0,0,.45);
+  }
+  .title-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+  .date { color: var(--dim); font-size: 13px; }
+  .status-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .badge {
+    color: #fff; font-weight: 700;
+    padding: 4px 14px; border-radius: 999px;
+    font-size: 14px; transition: .2s;
+    cursor: pointer; white-space: nowrap;
+  }
+  .badge:hover { filter: brightness(1.15); }
+  .badge-level { background: linear-gradient(135deg, #2ea043, #238636); box-shadow: 0 2px 10px rgba(46,160,67,.35); }
+  .badge-streak { background: linear-gradient(135deg, #f0883e, #d9570c); box-shadow: 0 2px 10px rgba(240,136,62,.35); cursor: default; }
+  .badge-exam { background: linear-gradient(135deg, #388bfd, #1f6feb); box-shadow: 0 2px 10px rgba(56,139,253,.35); }
+  .today-score { font-size: 14px; color: var(--dim); }
+  .today-score b { color: var(--text); font-size: 18px; margin-left: 4px; }
+  .level-rule { margin-top: 10px; font-size: 12px; color: var(--dim); border-top: 1px dashed var(--border); padding-top: 8px; }
+
+  .attr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .attr-grid { grid-template-columns: 1fr; } }
+  .attr-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 12px;
+    padding: 14px 16px 12px;
+  }
+  .card-head { margin-bottom: 10px; }
+  .head-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .attr-name { font-size: 16px; font-weight: 700; }
+  .attr-level { font-size: 12px; font-weight: 600; color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent); padding: 2px 8px; border-radius: 6px; }
+  .progress { height: 8px; background: #21262d; border-radius: 99px; overflow: hidden; }
+  .progress .bar { height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s ease; }
+  .points-row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; color: var(--dim); }
+  .points-row b { color: var(--text); }
+
+  .item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(48,54,61,.5); }
+  .item-name { flex: 1; font-size: 13.5px; }
+  .item-name .tag { display: inline-block; font-size: 10px; color: var(--dim); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 1px; }
+  .item-score { font-size: 13px; font-weight: 600; min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .zero { color: var(--dim); }
+  .subline { display: flex; align-items: center; justify-content: flex-end; gap: 8px; border-top: none; padding-top: 0; padding-bottom: 6px; font-size: 11.5px; color: var(--dim); }
+  .subline b { color: var(--accent-know); font-size: 13px; }
+
+  .switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; inset: 0; cursor: pointer; background: #30363d; border-radius: 99px; transition: .25s; }
+  .slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #8b949e; border-radius: 50%; transition: .25s; }
+  .switch input:checked + .slider { background: var(--accent); }
+  .switch input:checked + .slider::before { transform: translateX(18px); background: #fff; }
+
+  input[type="number"] {
+    width: 74px; background: #21262d; border: 1px solid var(--border);
+    color: var(--text); border-radius: 6px; padding: 4px 8px; font-size: 13px;
+    text-align: right; font-variant-numeric: tabular-nums;
+  }
+  input[type="number"]:focus { outline: none; border-color: var(--accent); }
+
+  .card-foot { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 12px; color: var(--dim); display: flex; justify-content: space-between; align-items: center; }
+  .card-foot b { font-size: 15px; }
+
+  footer { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .settle-btn {
+    background: linear-gradient(135deg, #238636, #2ea043); color: #fff; border: none;
+    padding: 13px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: .2s;
+    box-shadow: 0 4px 14px rgba(46,160,67,.3);
+  }
+  .settle-btn:hover { filter: brightness(1.1); }
+  .settle-btn.settled { background: linear-gradient(135deg, #1f6feb, #388bfd); }
+  .row-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .ghost-btn {
+    flex: 1; min-width: 100px; background: var(--card); border: 1px solid var(--border); color: var(--text);
+    padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: .2s;
+  }
+  .ghost-btn:hover { border-color: var(--accent-know); }
+  .danger-btn { color: var(--red); }
+  .danger-btn:hover { border-color: var(--red); }
+
+  .panel { margin-top: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .panel h3 { font-size: 14px; margin-bottom: 10px; color: var(--dim); font-weight: 600; }
+
+  /* 本周统计 */
+  .week-chart { display: flex; align-items: flex-end; gap: 8px; height: 130px; padding-top: 6px; }
+  .week-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; min-width: 0; }
+  .week-val { font-size: 11px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .week-bar-wrap { width: 100%; flex: 1; display: flex; align-items: flex-end; justify-content: center; }
+  .week-bar { width: 55%; min-height: 3px; background: linear-gradient(180deg, var(--green), #2ea043); border-radius: 4px 4px 0 0; transition: height .4s ease; }
+  .week-col.today .week-bar { background: linear-gradient(180deg, var(--gold), #ff9f43); }
+  .week-col.empty .week-bar { background: #30363d; }
+  .week-label { font-size: 11px; color: var(--dim); }
+  .radar-title { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 12.5px; color: var(--dim); text-align: center; }
+
+  /* 成就 */
+  .ach-stats { font-size: 12.5px; color: var(--dim); margin-bottom: 10px; line-height: 1.8; }
+  .ach-stats b { color: var(--gold); }
+  .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+  .ach-card { border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 12px; background: var(--card2); }
+  .ach-card.unlocked { border-color: rgba(255,211,61,.5); box-shadow: 0 0 12px rgba(255,211,61,.08); }
+  .ach-card.locked { opacity: .4; }
+  .ach-icon { font-size: 20px; }
+  .ach-name { font-weight: 700; margin: 4px 0 2px; }
+  .ach-card.unlocked .ach-name { color: var(--gold); }
+  .ach-desc { color: var(--dim); font-size: 11px; }
+
+  /* 历史 */
+  .hist-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 4px; border-bottom: 1px solid rgba(48,54,61,.5); font-size: 13px; }
+  .hist-row:last-child { border-bottom: none; }
+  .hist-date { color: var(--dim); font-size: 12px; }
+  .hist-scores { display: flex; gap: 10px; font-size: 12px; color: var(--dim); flex-wrap: wrap; }
+  .hist-scores b { color: var(--text); }
+  .hist-flag { font-size: 11px; padding: 1px 7px; border-radius: 5px; }
+  .hist-flag.on { background: rgba(63,185,80,.15); color: var(--green); }
+  .hist-flag.off { background: rgba(139,148,158,.12); color: var(--dim); }
+  .hist-detail { padding: 6px 4px 10px; border-bottom: 1px dashed var(--border); display: flex; flex-wrap: wrap; gap: 6px; }
+  .hist-tag { font-size: 11px; background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 2px 8px; color: var(--dim); }
+  .hist-tag.done { color: var(--text); border-color: rgba(63,185,80,.4); }
+  .hint { font-size: 11.5px; color: var(--dim); margin-top: 8px; }
+  .flash { animation: flash .5s ease; }
+  @keyframes flash { 0% { background: rgba(63,185,80,.25); } 100% { background: transparent; } }
+
+  /* 升级评价弹窗 */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(5,8,12,.78);
+    display: flex; align-items: center; justify-content: center; z-index: 100;
+    backdrop-filter: blur(6px);
+    animation: fadeIn .25s ease;
+  }
+  .modal-overlay[hidden] { display: none; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: linear-gradient(165deg, #1d242f, #12161d);
+    border: 1px solid rgba(255,211,61,.35);
+    border-radius: 18px; padding: 32px 38px; text-align: center;
+    max-width: 460px; width: 90%;
+    box-shadow: 0 0 60px rgba(255,211,61,.15), 0 20px 60px rgba(0,0,0,.6);
+    animation: pop .35s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-glow { font-size: 13px; letter-spacing: 6px; color: var(--gold); font-weight: 800; margin-bottom: 6px; }
+  .modal-title {
+    font-size: 42px; font-weight: 900; margin: 8px 0 2px;
+    background: linear-gradient(90deg, #ffd33d, #ff9f43, #ff6b6b);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .modal-rank { font-size: 19px; font-weight: 800; color: var(--gold); margin: 6px 0 12px; }
+  .modal-desc { font-size: 14px; color: var(--dim); line-height: 1.8; margin-bottom: 22px; white-space: pre-line; }
+  .modal button {
+    background: linear-gradient(135deg, #238636, #2ea043); color: #fff; border: none;
+    padding: 11px 34px; border-radius: 999px; font-size: 14px; font-weight: 700; cursor: pointer; transition: .2s;
+  }
+  .modal button:hover { filter: brightness(1.15); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>🌱 完美人生系统</h1>
+    <span class="date" id="dateLabel"></span>
+  </div>
+  <div class="status-row">
+    <div class="badge badge-level" id="charBadge" onclick="showRank()" title="点击查看当前称号">Lv.0</div>
+    <div class="badge badge-streak" id="streakBadge" title="连续打卡天数（断签归零）">🔥 连续 0 天</div>
+    <div class="badge badge-exam" id="examBadge" onclick="setExamDate()" title="点击设置/修改上岸目标日期">🎯 设个上岸目标</div>
+    <div class="today-score">今日得分 <b id="todayTotal">0</b></div>
+  </div>
+  <div class="level-rule">升级规则：四属性均达 1 级（30 点）→ 角色 +1 级；单项满 30 点自动升级，溢出点数滚入下一级。升级有惊喜（毒舌）评价。</div>
+</header>
+
+<main class="attr-grid" id="attrGrid"><!-- cards injected --></main>
+
+<footer>
+  <button class="settle-btn" id="settleBtn" onclick="settle()">✅ 结算今日得分</button>
+  <div class="row-btns">
+    <button class="ghost-btn" id="weekBtn" onclick="toggleWeek()">📊 统计雷达</button>
+    <button class="ghost-btn" id="achBtn" onclick="toggleAchievements()">🏆 成就</button>
+    <button class="ghost-btn" onclick="showRandomQuote()">🎲 语录</button>
+    <button class="ghost-btn" id="histBtn" onclick="toggleHistory()">📅 历史</button>
+  </div>
+  <div class="row-btns">
+    <button class="ghost-btn" onclick="exportData()">💾 导出备份</button>
+    <button class="ghost-btn" onclick="importData()">📂 导入备份</button>
+    <button class="ghost-btn danger-btn" onclick="resetAll()">🗑 清空</button>
+  </div>
+</footer>
+
+<section class="panel" id="weekPanel" hidden></section>
+<section class="panel" id="achPanel" hidden></section>
+<section class="panel" id="historyPanel" hidden></section>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+
+<div class="modal-overlay" id="levelModal" hidden>
+  <div class="modal">
+    <div class="modal-glow" id="mGlow">⚡ LEVEL UP ⚡</div>
+    <div class="modal-title" id="mTitle">Lv.1</div>
+    <div class="modal-rank" id="mRank">称号</div>
+    <div class="modal-desc" id="mDesc">评价</div>
+    <button onclick="closeModal()" id="mBtn">继续变强 💪</button>
+  </div>
+</div>
+
+<script>
+/* ================= 配置 ================= */
+const CONFIG = {
+  appName: "完美人生系统",
+  character: { name: "杨裕珏" },
+  attributes: {
+    body: {
+      label: "体魄", accent: "var(--accent-body)",
+      items: [
+        { id: "body_gym",   name: "健身/力量训练45分钟起", points: 1.0, type: "boolean" },
+        { id: "body_sleep", name: "12点前睡",              points: 0.3, type: "boolean" },
+        { id: "body_nosnack", name: "不吃零食/不喝甜饮",    points: 0.2, type: "boolean" },
+        { id: "body_wall",  name: "靠墙站10分钟",          points: 0.1, type: "boolean" },
+        { id: "body_water", name: "喝水（建议1500-2000ml）", type: "progress", unit: "ml",
+          dailyRequirement: 2000, points: 0.15,
+          rule: "按比例计分：喝满2000ml得+0.15，多喝不额外加分" }
+      ]
+    },
+    knowledge: {
+      label: "学识", accent: "var(--accent-know)",
+      items: [
+        { id: "know_study", name: "考公学习（刷题+看视频）", type: "study", unit: "小时",
+          pointsPerHour: 0.5,
+          rule: "每学满1小时打卡1次 +0.5；多学多加分，上不封顶（学2h=2次卡+1.0）" },
+        { id: "know_english",  name: "英语30分钟",           points: 0.25, type: "boolean" },
+        { id: "know_read",     name: "阅读30分钟（可选）",    points: 0.25, type: "boolean" }
+      ]
+    },
+    skill: {
+      label: "技能", accent: "var(--accent-skill)",
+      items: [
+        {
+          id: "skill_writing", name: "写作（硬性底线8000字）", type: "progress", unit: "字",
+          dailyRequirement: 8000, stepSize: 2000, pointsPerStep: 0.15,
+          maxPoints: null, penaltyPerMissingStep: 0.3,
+          formula: "基础8000字=+0.6；每多2000字额外+0.15，上不封顶；不足按公式倒扣（可负分）"
+        },
+        { id: "skill_post", name: "支付宝帖子2篇（硬性）", type: "progress", unit: "篇",
+          dailyRequirement: 2, points: 0.3,
+          rule: "不足2篇该项记0，不给部分分" },
+        { id: "skill_review",  name: "每日复盘+明日计划", points: 0.25, type: "boolean" },
+        { id: "skill_practice",name: "专项刻意练习45分钟（可选）", points: 0.5, type: "boolean" }
+      ]
+    },
+    charm: {
+      label: "魅力", accent: "var(--accent-charm)",
+      items: [
+        { id: "charm_wakeup",    name: "准时起（固定时间）", points: 0.1, type: "boolean" },
+        { id: "charm_posture",   name: "挺胸抬头",          points: 0.3, type: "boolean" },
+        { id: "charm_skincare",  name: "护肤（早晚各一次）", type: "skincare",
+          morningPoints: 0.05, nightPoints: 0.05,
+          rule: "早晚都做+0.1；只做一次+0.05；都不做0" },
+        { id: "charm_meditation",name: "静默/冥想10分钟",    points: 0.2, type: "boolean" },
+        { id: "charm_speech",    name: "克制性发言（想插嘴/抱怨/炫耀时闭嘴）", points: 0.3, type: "boolean" },
+        { id: "charm_praise",    name: "赞美别人一次",       points: 0.15, type: "boolean" }
+      ]
+    }
+  },
+  maxPerLevel: 30
+};
+
+/* 等级称号表（Lv.0-8 固定，Lv.9+ 动态扩展） */
+const RANKS = [
+  { title: "芸芸众生", desc: "丢进人群毫无亮点，连奶茶店第二杯半价都轮不到你。但没关系，系统已就位，练起来。" },
+  { title: "路明非般的废柴", desc: "废柴中的战斗机，衰得理直气壮。但至少你开始动了——废柴不可怕，躺平才可怕。" },
+  { title: "觉醒的杂鱼", desc: "小透明，考公路上的一颗螺丝钉。还没人注意到你，但时间都记着你的每次打卡。" },
+  { title: "楚子航本人级别", desc: "面瘫、自律、卷王之王。眼神里开始有杀气，刷题速度令人窒息——没人再敢把你当小透明。" },
+  { title: "凯撒·加图索级", desc: "人群中的主角，自带聚光灯。成绩单和存在感一起起飞。" },
+  { title: "上杉绘梨衣级", desc: "沉默中爆发的怪物，数据会说话。你的打卡记录本身就是一部恐怖片。" },
+  { title: "昂热校长级", desc: "活成了传说的老卷王。你的经验条，是别人仰望的天花板。" },
+  { title: "言灵·王权持有者", desc: "行走的挂。上岸对你只是时间问题，考公只是走个过场。" },
+  { title: "屠龙者", desc: "系统已无法承载你的强度。建议直接去当出题人，或者征服星辰大海。" }
+];
+function rankFor(level) {
+  if (level < RANKS.length) return RANKS[level];
+  // Lv.8 之后动态扩展称号
+  const turn = level - (RANKS.length - 1);
+  const dyn = [
+    { t: `屠龙者·${turn}转`, d: `第 ${turn} 次转世屠龙，你已经把系统玩坏了。等级 ${level}，超出凡人理解范畴。` },
+  ][0];
+  if (turn <= 3) return { title: dyn.t, desc: dyn.d };
+  if (turn <= 6) return { title: `超越系统的存在·${turn}阶`, desc: `等级 ${level}。系统已经算不清你的上限，建议你直接入职出题组，给后来人一点活路。` };
+  return { title: `天道·完美人生·${turn}阶`, desc: `等级 ${level}。你已不是玩家，你是规则本身。完美人生？不，你就是完美人生。` };
+}
+
+/* ================= 数据层 ================= */
+const KEY = "yyj_growth_system_v1";
+let state = load();
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || { history: {} }; }
+  catch { return { history: {} }; }
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function weekday() { return ["日","一","二","三","四","五","六"][new Date().getDay()]; }
+const TODAY = todayStr();
+
+function todayEntry() {
+  if (!state.history[TODAY]) state.history[TODAY] = { items: {}, scores: null, settled: false };
+  return state.history[TODAY];
+}
+
+/* ================= 计分核心 ================= */
+function calcItemScore(item, value) {
+  if (item.type === "boolean") return value ? item.points : 0;
+  if (item.type === "skincare") {
+    if (!value) return 0;
+    return (value.m ? item.morningPoints : 0) + (value.n ? item.nightPoints : 0);
+  }
+  if (item.type === "study") {
+    const hours = Number(value) || 0;
+    return hours * item.pointsPerHour;
+  }
+  if (item.type === "progress") {
+    if (item.id === "skill_writing") {
+      const words = Number(value) || 0;
+      const steps = Math.floor(words / 2000);
+      const missing = Math.max(0, 4 - steps);
+      return item.pointsPerStep * steps - item.penaltyPerMissingStep * missing;
+    }
+    if (item.id === "skill_post") {
+      const n = Number(value) || 0;
+      return n >= item.dailyRequirement ? item.points : 0;
+    }
+    if (item.id === "body_water") {
+      const v = Number(value) || 0;
+      return Math.min(item.points, (v / item.dailyRequirement) * item.points);
+    }
+  }
+  return 0;
+}
+
+function computeScores(items) {
+  const out = {};
+  for (const [key, attr] of Object.entries(CONFIG.attributes)) {
+    let sum = 0;
+    for (const it of attr.items) sum += calcItemScore(it, items[it.id]);
+    out[key] = Math.round(sum * 1000) / 1000;
+  }
+  return out;
+}
+
+function totals() {
+  const t = { body: 0, knowledge: 0, skill: 0, charm: 0 };
+  for (const entry of Object.values(state.history)) {
+    if (entry.settled && entry.scores) {
+      for (const k in t) t[k] += entry.scores[k] || 0;
+    }
+  }
+  return t;
+}
+
+function levelsOf(tot) {
+  const out = {};
+  for (const k in tot) {
+    let total = tot[k];
+    let level = 0;
+    if (total >= CONFIG.maxPerLevel) level = Math.floor(total / CONFIG.maxPerLevel);
+    out[k] = { level, current: Math.round((total - level * CONFIG.maxPerLevel) * 1000) / 1000, total: Math.round(total * 1000) / 1000 };
+  }
+  out.characterLevel = Math.min(...Object.values(out).map(o => o.level));
+  return out;
+}
+
+function dayTotal(entry) {
+  if (!entry || !entry.settled || !entry.scores) return null;
+  return Math.round((entry.scores.body + entry.scores.knowledge + entry.scores.skill + entry.scores.charm) * 1000) / 1000;
+}
+
+/* ================= 渲染 ================= */
+function buildCard(key, attr, info) {
+  const el = document.createElement("div");
+  el.className = "attr-card";
+  el.style.setProperty("--accent", attr.accent);
+  let itemsHtml = "";
+  for (const it of attr.items) itemsHtml += buildItem(key, it);
+  el.innerHTML = `
+    <div class="card-head">
+      <div class="head-line">
+        <span class="attr-name">${attr.label}</span>
+        <span class="attr-level" id="lvl_${key}">Lv.${info.level}</span>
+      </div>
+      <div class="progress"><div class="bar" id="bar_${key}" style="width:${pct(info.current)}%"></div></div>
+      <div class="points-row"><span>本级进度</span><span id="pts_${key}"><b>${fmt(info.current)}</b> / ${CONFIG.maxPerLevel}</span></div>
+    </div>
+    ${itemsHtml}
+    <div class="card-foot">
+      <span>今日「${attr.label}」得分</span>
+      <b id="cardScore_${key}">+0</b>
+    </div>`;
+  return el;
+}
+
+function pct(cur) { return Math.min(100, Math.max(0, (cur / CONFIG.maxPerLevel) * 100)); }
+function fmt(n) { return (Math.round(n * 1000) / 1000).toString(); }
+function scoreClass(n) { return n > 0 ? "pos" : n < 0 ? "neg" : "zero"; }
+function scoreText(n) { return (n > 0 ? "+" : "") + fmt(n); }
+
+function buildItem(attrKey, item) {
+  if (item.type === "boolean") {
+    return `
+      <div class="item">
+        <span class="item-name">${item.name}<span class="tag">+${item.points}</span></span>
+        <span class="item-score" id="sc_${item.id}">0</span>
+        <label class="switch">
+          <input type="checkbox" data-item="${item.id}" onchange="onChange('${item.id}')">
+          <span class="slider"></span>
+        </label>
+      </div>`;
+  }
+  if (item.type === "skincare") {
+    return `
+      <div class="item">
+        <span class="item-name">${item.name}<span class="tag">早晚各+0.05</span></span>
+        <span class="item-score" id="sc_${item.id}">0</span>
+        <label class="switch"><input type="checkbox" data-item="${item.id}" data-slot="m" onchange="onChange('${item.id}')"><span class="slider"></span></label>
+        <label class="switch"><input type="checkbox" data-item="${item.id}" data-slot="n" onchange="onChange('${item.id}')"><span class="slider"></span></label>
+      </div>`;
+  }
+  if (item.type === "study") {
+    return `
+      <div class="item">
+        <span class="item-name">${item.name}<span class="tag">每小时+0.5</span></span>
+        <span class="item-score" id="sc_${item.id}">0</span>
+        <input type="number" min="0" step="0.5" placeholder="小时" data-item="${item.id}" oninput="onInput('${item.id}')">
+      </div>
+      <div class="item subline">
+        <span>打卡：<b id="ck_${item.id}">0</b> 次</span>
+        <span style="color:var(--dim)">每满1小时=1次卡，多学多加分</span>
+      </div>`;
+  }
+  if (item.type === "progress") {
+    const hint = item.id === "skill_writing"
+      ? `基础8000字=+0.6，每多2000字再+0.15（不封顶）；不足按公式倒扣`
+      : item.id === "body_water"
+        ? `按比例计分：喝满 ${item.dailyRequirement}ml 得 +${item.points}，多喝不加分（建议每天 1500-2000ml）`
+        : `≥${item.dailyRequirement}${item.unit} +${item.points}，不足整项记0`;
+    return `
+      <div class="item">
+        <span class="item-name">${item.name}<span class="tag">${item.id==="skill_writing"?"每+2000字+0.15":"进度"}</span></span>
+        <span class="item-score" id="sc_${item.id}">0</span>
+        <input type="number" min="0" placeholder="${item.unit}" data-item="${item.id}" oninput="onInput('${item.id}')">
+      </div>
+      <div class="item subline">${hint}</div>`;
+  }
+  return "";
+}
+
+function render() {
+  const entry = todayEntry();
+  const items = entry.items || {};
+  const grid = document.getElementById("attrGrid");
+  grid.innerHTML = "";
+  const tot = totals();
+  const info = levelsOf(tot);
+
+  for (const [key, attr] of Object.entries(CONFIG.attributes)) {
+    const card = buildCard(key, attr, info[key]);
+    grid.appendChild(card);
+    for (const it of attr.items) {
+      const val = items[it.id];
+      const inputs = card.querySelectorAll(`input[data-item="${it.id}"]`);
+      inputs.forEach(inp => {
+        if (it.type === "skincare") {
+          if (inp.dataset.slot === "m") inp.checked = !!(val && val.m);
+          if (inp.dataset.slot === "n") inp.checked = !!(val && val.n);
+        } else if (it.type === "boolean") {
+          inp.checked = !!val;
+        } else {
+          inp.value = (val === null || val === undefined) ? "" : val;
+        }
+      });
+    }
+  }
+
+  document.getElementById("charBadge").textContent = `Lv.${info.characterLevel}`;
+  document.getElementById("streakBadge").textContent = `🔥 连续 ${computeStreak()} 天`;
+  document.getElementById("dateLabel").textContent = `${TODAY} 周${weekday()}`;
+
+  // 考公倒计时
+  const ed = examDays();
+  const eb = document.getElementById("examBadge");
+  if (ed === null) eb.textContent = "🎯 设个上岸目标";
+  else if (ed > 0) eb.textContent = `🎯 距上岸 ${ed} 天`;
+  else if (ed === 0) eb.textContent = "🎯 就是今天！";
+  else eb.textContent = "🎯 目标日已过";
+
+  const btn = document.getElementById("settleBtn");
+  if (entry.settled) {
+    btn.textContent = "✅ 今日已结算（修改后点此更新）";
+    btn.classList.add("settled");
+  } else {
+    btn.textContent = "✅ 结算今日得分";
+    btn.classList.remove("settled");
+  }
+
+  updateScores();
+}
+
+function updateScores() {
+  const entry = todayEntry();
+  const items = entry.items || {};
+  const scores = computeScores(items);
+  let total = 0;
+  for (const [key, attr] of Object.entries(CONFIG.attributes)) {
+    const s = scores[key];
+    total += s;
+    const scEl = document.getElementById(`cardScore_${key}`);
+    if (scEl) { scEl.textContent = scoreText(s); scEl.className = scoreClass(s); }
+    for (const it of attr.items) {
+      const el = document.getElementById(`sc_${it.id}`);
+      if (el) {
+        const v = calcItemScore(it, items[it.id]);
+        el.textContent = scoreText(v);
+        el.className = "item-score " + scoreClass(v);
+      }
+      if (it.type === "study") {
+        const ck = document.getElementById(`ck_${it.id}`);
+        if (ck) ck.textContent = Math.floor(Number(items[it.id]) || 0);
+      }
+    }
+  }
+  const tEl = document.getElementById("todayTotal");
+  tEl.textContent = scoreText(Math.round(total * 1000) / 1000);
+  tEl.className = scoreClass(total);
+}
+
+/* ================= 交互 ================= */
+function collectItems() {
+  const items = {};
+  for (const [key, attr] of Object.entries(CONFIG.attributes)) {
+    for (const it of attr.items) {
+      const inputs = document.querySelectorAll(`input[data-item="${it.id}"]`);
+      if (it.type === "boolean") {
+        inputs.forEach(inp => { if (inp.type === "checkbox") items[it.id] = inp.checked; });
+      } else if (it.type === "skincare") {
+        const m = document.querySelector(`input[data-item="${it.id}"][data-slot="m"]`);
+        const n = document.querySelector(`input[data-item="${it.id}"][data-slot="n"]`);
+        items[it.id] = { m: m && m.checked, n: n && n.checked };
+      } else {
+        inputs.forEach(inp => {
+          if (inp.type === "number") items[it.id] = inp.value === "" ? null : Number(inp.value);
+        });
+      }
+    }
+  }
+  return items;
+}
+
+function onChange(id) { const items = collectItems(); todayEntry().items = items; save(); updateScores(); }
+function onInput(id) { const items = collectItems(); todayEntry().items = items; save(); updateScores(); }
+
+function settle() {
+  const entry = todayEntry();
+  const items = collectItems();
+  entry.items = items;
+  entry.scores = computeScores(items);
+  entry.settled = true;
+  save();
+
+  const review = dailyReview(entry.scores, entry.items);
+  entry.review = review;
+  save();
+
+  const info = levelsOf(totals());
+  const prev = (state.lastCharLevel === undefined) ? info.characterLevel : state.lastCharLevel;
+  state.lastCharLevel = info.characterLevel;
+  save();
+
+  render();
+  document.getElementById("settleBtn").classList.add("flash");
+
+  if (info.characterLevel > prev) {
+    pendingAfterClose = review;
+    showLevelUp(info.characterLevel);
+  } else {
+    showModal(review.glow, review.title, review.rank, review.desc, review.btn);
+  }
+}
+
+/* ================= 连续打卡 & 考公倒计时 ================= */
+function computeStreak() {
+  const settled = new Set();
+  for (const [d, e] of Object.entries(state.history)) if (e.settled) settled.add(d);
+  const now = new Date();
+  let d = new Date(now);
+  if (!settled.has(todayStr())) d = new Date(now.getTime() - 86400000);
+  let streak = 0;
+  while (true) {
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    if (settled.has(key)) { streak++; d = new Date(d.getTime() - 86400000); }
+    else break;
+  }
+  return streak;
+}
+
+function examDays() {
+  if (!state.examDate) return null;
+  const e = new Date(state.examDate + "T00:00:00");
+  const t = new Date(todayStr() + "T00:00:00");
+  return Math.round((e - t) / 86400000);
+}
+function setExamDate() {
+  const v = prompt("输入上岸目标日期（格式 YYYY-MM-DD，例如 2026-12-01）：", state.examDate || "");
+  if (v === null) return;
+  const vv = v.trim();
+  if (!vv) { state.examDate = null; save(); render(); return; }
+  const d = new Date(vv + "T00:00:00");
+  if (isNaN(d.getTime())) { alert("日期格式不对，请用 YYYY-MM-DD，例如 2026-12-01"); return; }
+  state.examDate = vv;
+  save();
+  render();
+}
+
+/* ================= 本周统计 & 雷达图 ================= */
+function weekStats() {
+  const now = new Date();
+  const dow = now.getDay() === 0 ? 7 : now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dow - 1));
+  const labels = ["一", "二", "三", "四", "五", "六", "日"];
+  const out = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    out.push({ label: labels[i], key, total: dayTotal(state.history[key]), isToday: key === todayStr() });
+  }
+  return out;
+}
+
+function toggleWeek() {
+  const panel = document.getElementById("weekPanel");
+  const btn = document.getElementById("weekBtn");
+  if (panel.hidden) {
+    renderWeek();
+    panel.hidden = false;
+    btn.textContent = "📊 收起统计";
+  } else {
+    panel.hidden = true;
+    btn.textContent = "📊 统计雷达";
+  }
+}
+
+function renderWeek() {
+  const stats = weekStats();
+  const max = Math.max(3, ...stats.map(s => s.total || 0));
+  let html = `<h3>📊 本周概览（周一到周日）· 连续打卡 <b style="color:var(--gold)">${computeStreak()}</b> 天</h3><div class="week-chart">`;
+  for (const s of stats) {
+    const h = s.total === null ? 0 : Math.max(4, Math.round((s.total / max) * 100));
+    html += `<div class="week-col ${s.isToday ? "today" : ""} ${s.total === null ? "empty" : ""}">
+      <div class="week-val">${s.total === null ? "—" : fmt(s.total)}</div>
+      <div class="week-bar-wrap"><div class="week-bar" style="height:${h}%"></div></div>
+      <div class="week-label">${s.isToday ? "今" : s.label}</div>
+    </div>`;
+  }
+  html += `</div>`;
+  html += `<div class="radar-title">— 四维成长雷达（累计属性）—</div>${radarSvg()}`;
+  html += `<div class="hint">柱子越高得分越多；金色为今天。连续打卡按「已结算」天数计算，断一天即归零。</div>`;
+  document.getElementById("weekPanel").innerHTML = html;
+}
+
+function radarSvg() {
+  const tot = totals();
+  const vals = [tot.body, tot.knowledge, tot.skill, tot.charm];
+  const maxV = Math.max(30, ...vals);
+  const cx = 110, cy = 110, r = 82;
+  const angles = [-90, 0, 90, 180].map(a => a * Math.PI / 180);
+  const labels = ["体魄", "学识", "技能", "魅力"];
+  const colors = ["#ff6b6b", "#4dabf7", "#b197fc", "#f783ac"];
+
+  let rings = "";
+  for (let ring = 1; ring <= 3; ring++) {
+    const pts = angles.map(a => `${(cx + r * ring/3 * Math.cos(a)).toFixed(1)},${(cy + r * ring/3 * Math.sin(a)).toFixed(1)}`).join(" ");
+    rings += `<polygon points="${pts}" fill="none" stroke="#30363d" stroke-width="1"/>`;
+  }
+  let axes = "";
+  angles.forEach(a => {
+    axes += `<line x1="${cx}" y1="${cy}" x2="${(cx + r * Math.cos(a)).toFixed(1)}" y2="${(cy + r * Math.sin(a)).toFixed(1)}" stroke="#30363d" stroke-width="1"/>`;
+  });
+  const dataPts = vals.map((v, i) => `${(cx + r * Math.max(0.03, v / maxV) * Math.cos(angles[i])).toFixed(1)},${(cy + r * Math.max(0.03, v / maxV) * Math.sin(angles[i])).toFixed(1)}`).join(" ");
+  let dots = "", texts = "";
+  vals.forEach((v, i) => {
+    const px = cx + r * Math.max(0.03, v / maxV) * Math.cos(angles[i]);
+    const py = cy + r * Math.max(0.03, v / maxV) * Math.sin(angles[i]);
+    dots += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4" fill="${colors[i]}"/>`;
+    const lx = cx + (r + 24) * Math.cos(angles[i]);
+    const ly = cy + (r + 24) * Math.sin(angles[i]);
+    const anchor = Math.abs(Math.cos(angles[i])) < 0.3 ? "middle" : (Math.cos(angles[i]) > 0 ? "start" : "end");
+    texts += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="12" fill="${colors[i]}">${labels[i]} ${Math.round(v * 10) / 10}</text>`;
+  });
+  return `<svg viewBox="0 0 220 220" style="width:100%;max-width:280px;display:block;margin:6px auto">${rings}${axes}<polygon points="${dataPts}" fill="rgba(255,211,61,.16)" stroke="#ffd33d" stroke-width="2"/>${dots}${texts}</svg>`;
+}
+
+/* ================= 成就系统 ================= */
+const ACHIEVEMENTS = [
+  { id: "first_settle", icon: "🌱", name: "初次入道", desc: "完成第一次结算" },
+  { id: "streak3",      icon: "🔥", name: "三日之约", desc: "连续打卡 3 天" },
+  { id: "streak7",      icon: "⚡", name: "一周战神", desc: "连续打卡 7 天" },
+  { id: "streak30",     icon: "👑", name: "满月传说", desc: "连续打卡 30 天" },
+  { id: "study100",     icon: "📚", name: "百时苦读", desc: "累计学习 100 小时" },
+  { id: "study500",     icon: "🧠", name: "学海无涯", desc: "累计学习 500 小时" },
+  { id: "write100k",    icon: "✍️", name: "十万写手", desc: "累计写作 10 万字" },
+  { id: "write500k",    icon: "📝", name: "码字之王", desc: "累计写作 50 万字" },
+  { id: "char3",        icon: "🐉", name: "觉醒者", desc: "角色等级达到 Lv.3" },
+  { id: "char5",        icon: "🌟", name: "传说级", desc: "角色等级达到 Lv.5" },
+  { id: "char8",        icon: "💫", name: "屠龙者", desc: "角色等级达到 Lv.8" },
+  { id: "perfect_day",  icon: "💯", name: "完美一天", desc: "单日得分 ≥ 5" },
+  { id: "balanced",     icon: "⚖️", name: "四维均衡", desc: "四个属性均达到 Lv.1" }
+];
+
+function achievementStatus() {
+  const settledDates = Object.keys(state.history).filter(d => state.history[d].settled);
+  const settledCount = settledDates.length;
+  const streak = computeStreak();
+  const tot = totals();
+  const info = levelsOf(tot);
+  let studyHours = 0, writeWords = 0, bestDay = 0;
+  for (const e of Object.values(state.history)) {
+    if (!e.settled) continue;
+    if (e.items) {
+      studyHours += Number(e.items.know_study) || 0;
+      writeWords += Number(e.items.skill_writing) || 0;
+    }
+    const t = dayTotal(e);
+    if (t !== null) bestDay = Math.max(bestDay, t);
+  }
+  const minLevel = Math.min(info.body.level, info.knowledge.level, info.skill.level, info.charm.level);
+  const tests = {
+    first_settle: settledCount >= 1,
+    streak3: streak >= 3,
+    streak7: streak >= 7,
+    streak30: streak >= 30,
+    study100: studyHours >= 100,
+    study500: studyHours >= 500,
+    write100k: writeWords >= 100000,
+    write500k: writeWords >= 500000,
+    char3: info.characterLevel >= 3,
+    char5: info.characterLevel >= 5,
+    char8: info.characterLevel >= 8,
+    perfect_day: bestDay >= 5,
+    balanced: minLevel >= 1
+  };
+  return {
+    tests,
+    stats: {
+      settledCount, streak,
+      studyHours: Math.round(studyHours), writeWords: Math.round(writeWords),
+      bestDay, characterLevel: info.characterLevel
+    }
+  };
+}
+
+function toggleAchievements() {
+  const panel = document.getElementById("achPanel");
+  const btn = document.getElementById("achBtn");
+  if (panel.hidden) {
+    renderAchievements();
+    panel.hidden = false;
+    btn.textContent = "🏆 收起成就";
+  } else {
+    panel.hidden = true;
+    btn.textContent = "🏆 成就";
+  }
+}
+
+function renderAchievements() {
+  const { tests, stats } = achievementStatus();
+  const unlocked = Object.values(tests).filter(Boolean).length;
+  let html = `<h3>🏆 成就系统（${unlocked}/${ACHIEVEMENTS.length} 已解锁）</h3>`;
+  html += `<div class="ach-stats">已结算 <b>${stats.settledCount}</b> 天 · 连续 <b>${stats.streak}</b> 天 · 累计学习 <b>${stats.studyHours}</b> 小时 · 累计写作 <b>${stats.writeWords}</b> 字 · 最佳单日 <b>${stats.bestDay}</b> 分 · 角色 <b>Lv.${stats.characterLevel}</b></div>`;
+  html += `<div class="ach-grid">`;
+  for (const a of ACHIEVEMENTS) {
+    const done = !!tests[a.id];
+    html += `<div class="ach-card ${done ? "unlocked" : "locked"}">
+      <div class="ach-icon">${done ? a.icon : "🔒"}</div>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-desc">${a.desc}</div>
+    </div>`;
+  }
+  html += `</div>`;
+  document.getElementById("achPanel").innerHTML = html;
+}
+
+/* ================= 数据备份 ================= */
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `完美人生系统备份_${todayStr()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 100);
+}
+
+function importData() { document.getElementById("importFile").click(); }
+document.getElementById("importFile").addEventListener("change", (e) => {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || typeof data.history !== "object") throw new Error("bad");
+      if (confirm("导入将覆盖当前所有数据（含历史存档、等级、目标日期），确定继续吗？")) {
+        state = data;
+        save();
+        render();
+        alert("✅ 导入成功！数据已恢复。");
+      }
+    } catch { alert("❌ 导入失败：文件格式不正确或已损坏。"); }
+  };
+  reader.readAsText(f);
+});
+
+/* ================= 系统语录 ================= */
+const QUOTES = [
+  "系统翻阅了你的今日记录，差点笑出声：就这？",
+  "你的对手正在刷题，而你正在刷这个系统——加油，未来可期（狗头）。",
+  "写作 8000 字是底线不是天花板，别给自己发好人卡。",
+  "今天没学满 2 小时？系统建议你对着镜子念三遍「我配考上吗」。",
+  "连续打卡断了？没关系，反正系统已经习惯了你的间歇性努力。",
+  "你上次「明天一定」是哪天？系统帮你数着呢。",
+  "健身没去、零食照吃、水都不喝——你是想修炼成干尸吗？",
+  "别人上岸你摸鱼，别人加班你熬夜——时间管理大师（反向）。",
+  "你每多学一小时，上岸概率就 +1%——这不是鸡汤，是数学。",
+  "系统检测到你还在这里打卡，这本身就是最了不起的天赋。",
+  "记住：路明非都能从废柴变成救世主，你也行。",
+  "完美人生不是一天建成的，但每一张卡都在打地基。",
+  "今天的你辛苦了，系统批准你早点睡。",
+  "只要还在动，就不算输。卷王之路，一步一个脚印。",
+  "你现在的努力，都会变成将来考场上的底气。",
+  "系统看好你。真的。（这次不毒舌）"
+];
+function showRandomQuote() {
+  const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  showModal("🎲 系统语录", "系统有话说", "", q, "收下了 😤");
+}
+
+/* ================= 每日结算评价 ================= */
+function dailyReview(scores, items) {
+  const parts = [];
+  const total = Math.round((scores.body + scores.knowledge + scores.skill + scores.charm) * 1000) / 1000;
+  const studyH = Number(items.know_study) || 0;
+  if (studyH >= 8) parts.push(`学习 ${studyH} 小时，你已不是人，是台行走的学习永动机`);
+  else if (studyH >= 5) parts.push(`学习 ${studyH} 小时，卷王本王，楚子航看了都沉默`);
+  else if (studyH >= 2) parts.push(`学习 ${studyH} 小时，及格线以上，但离传说还差口气`);
+  else if (studyH > 0) parts.push(`才学习 ${studyH} 小时？就这？你的对手正在疯狂刷题`);
+  else parts.push(`今天一点没学，你是不是把系统当许愿池了`);
+  const words = Number(items.skill_writing) || 0;
+  if (words >= 16000) parts.push(`写作 ${words} 字，键盘都要冒火星了，稿费收割机`);
+  else if (words >= 12000) parts.push(`写作 ${words} 字，码字小钢炮，超额完成任务`);
+  else if (words >= 8000) parts.push(`写作 ${words} 字，底线守住，像个战士`);
+  else if (words > 0) parts.push(`写作 ${words} 字，离 8000 还差一截，系统替你捏把汗`);
+  else parts.push(`一个字没写，你的笔在哭泣，8000 字的底线被你踩在脚下`);
+  const posts = Number(items.skill_post) || 0;
+  if (posts >= 2) parts.push(`支付宝帖子 ${posts} 篇，笔耕不辍，铁饭碗在路上`);
+  else if (posts > 0) parts.push(`帖子才 ${posts} 篇？不足 2 篇整项归零，血亏`);
+  else parts.push(`帖子一篇没发，硬性底线直接躺平`);
+  if (items.body_gym) parts.push(`撸铁打卡，肌肉在生长，懒惰在逃亡`);
+  else parts.push(`没去健身，赘肉在暗喜，它今天赢了`);
+  if (items.body_nosnack) parts.push(`戒零食成功，意志力 +100`);
+  else parts.push(`零食破戒？你的腹肌在闹离婚`);
+  const water = Number(items.body_water) || 0;
+  if (water >= 2000) parts.push(`喝水 ${water}ml，水润满分，皮肤在发光`);
+  else if (water > 0) parts.push(`才喝 ${water}ml？离 2000ml 还远，你是仙人掌吗`);
+  else parts.push(`一滴水没喝，你的身体在喊救命`);
+  if (items.charm_posture) parts.push(`挺胸抬头，气场两米八`);
+  if (items.charm_skincare && items.charm_skincare.m && items.charm_skincare.n) parts.push(`早晚护肤齐全，皮肤在发光`);
+  if (items.charm_speech) parts.push(`忍住了一次吐槽，境界 +1，你正在变成情绪的主人`);
+  if (items.charm_wakeup) parts.push(`准时起床，战胜了被窝这个魔王`);
+  if (items.charm_praise) parts.push(`今天赞美了别人，情商在线，社交分拉满`);
+
+  let verdict;
+  if (total >= 5) verdict = `今日评级 S — 完美人生系统运转良好，你就是行走的传说`;
+  else if (total >= 4) verdict = `今日评级 A — 相当像样，离完美人生只差一点点骚操作`;
+  else if (total >= 2.5) verdict = `今日评级 B — 中规中矩，系统不失望也不惊喜`;
+  else if (total >= 1) verdict = `今日评级 C — 及格边缘试探，摸了但没完全摸`;
+  else if (total >= 0) verdict = `今日评级 D — 半摸鱼状态，系统决定再给你一次机会`;
+  else verdict = `今日评级 F — 零分战士！连系统都替你脸红，明天重新做人`;
+
+  const isMiss = (p) => /没|才学|才喝|才写|差|破戒|躺平|不足|没去|一滴/.test(p);
+  const highlights = parts.filter(p => !isMiss(p));
+  const misses = parts.filter(p => isMiss(p));
+  const keep = [...highlights.slice(0, 2), ...misses.slice(0, 1)].join("\n") || parts[0];
+  return { glow: "📋 今日结算", title: `得分 ${total}`, rank: verdict.split("—")[0].trim(), desc: keep + "\n\n" + verdict, btn: "收下评价 💪" };
+}
+
+/* ================= 弹窗 ================= */
+let pendingAfterClose = null;
+function showModal(glow, title, rank, desc, btnText) {
+  document.getElementById("mGlow").textContent = glow;
+  document.getElementById("mTitle").textContent = title;
+  document.getElementById("mRank").textContent = rank;
+  document.getElementById("mDesc").textContent = desc;
+  if (btnText) document.getElementById("mBtn").textContent = btnText;
+  const m = document.getElementById("levelModal");
+  m.hidden = false;
+  m.style.display = "flex";
+}
+function showLevelUp(level) {
+  const r = rankFor(level);
+  showModal("⚡ LEVEL UP ⚡", `Lv.${level}`, `「${r.title}」`, r.desc, "继续变强 💪");
+}
+function showRank() {
+  const info = levelsOf(totals());
+  const r = rankFor(info.characterLevel);
+  showModal("🔮 当前称号", `Lv.${info.characterLevel}`, `「${r.title}」`, r.desc, "知道了");
+}
+function closeModal() {
+  const m = document.getElementById("levelModal");
+  m.hidden = true;
+  m.style.display = "none";
+  if (pendingAfterClose) {
+    const r = pendingAfterClose;
+    pendingAfterClose = null;
+    showModal(r.glow, r.title, r.rank, r.desc, r.btn);
+  }
+}
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+document.getElementById("levelModal").addEventListener("click", (e) => {
+  if (e.target.id === "levelModal") closeModal();
+});
+
+/* ================= 历史记录 ================= */
+function itemMeta(id) {
+  for (const attr of Object.values(CONFIG.attributes)) {
+    const it = attr.items.find(x => x.id === id);
+    if (it) return { name: it.name, type: it.type, attr: attr.label };
+  }
+  return null;
+}
+function itemLabel(id, v) {
+  const m = itemMeta(id);
+  if (!m) return id;
+  if (m.type === "boolean") return `${m.name}：${v ? "✓" : "—"}`;
+  if (m.type === "skincare") return `${m.name}：早${v && v.m ? "✓" : "—"} 晚${v && v.n ? "✓" : "—"}`;
+  if (m.type === "study") return `${m.name}：${v || 0} 小时`;
+  if (id === "skill_writing") return `${m.name}：${v || 0} 字`;
+  if (id === "skill_post") return `${m.name}：${v || 0} 篇`;
+  if (id === "body_water") return `${m.name}：${v || 0} ml`;
+  return `${m.name}：${v}`;
+}
+
+function toggleHistory() {
+  const panel = document.getElementById("historyPanel");
+  const btn = document.getElementById("histBtn");
+  if (panel.hidden) {
+    renderHistory();
+    panel.hidden = false;
+    btn.textContent = "📅 收起历史";
+  } else {
+    panel.hidden = true;
+    btn.textContent = "📅 历史";
+  }
+}
+
+function renderHistory() {
+  const panel = document.getElementById("historyPanel");
+  const tot = totals();
+  const info = levelsOf(tot);
+  const dates = Object.keys(state.history).sort().reverse();
+  let html = `<h3>📜 历史存档（${dates.length} 天）· 累计：体魄 ${fmt(tot.body)} · 学识 ${fmt(tot.knowledge)} · 技能 ${fmt(tot.skill)} · 魅力 ${fmt(tot.charm)} · 角色 Lv.${info.characterLevel}「${rankFor(info.characterLevel).title}」</h3>`;
+  if (!dates.length) {
+    html += `<div class="hint">还没有存档记录。勾选今天的项目后点击「结算今日得分」即可存档。</div>`;
+  }
+  for (const d of dates) {
+    const e = state.history[d];
+    const s = e.scores;
+    const line = s
+      ? `体<b>${fmt(s.body)}</b> · 学<b>${fmt(s.knowledge)}</b> · 技<b>${fmt(s.skill)}</b> · 魅<b>${fmt(s.charm)}</b>`
+      : `<span style="color:var(--dim)">未结算</span>`;
+    const reviewTxt = e.review && e.review.title ? ` · ${e.review.rank}` : "";
+    const detailItems = e.items ? Object.entries(e.items)
+      .filter(([id, v]) => {
+        const m = itemMeta(id);
+        if (!m) return false;
+        if (m.type === "boolean") return !!v;
+        if (m.type === "skincare") return !!(v && (v.m || v.n));
+        return Number(v) > 0;
+      })
+      .map(([id, v]) => `<span class="hist-tag done">${itemLabel(id, v)}</span>`).join("")
+      : "";
+    html += `<div class="hist-row" onclick="toggleHistDetail('${d}')" style="cursor:pointer" title="点击展开当天明细">
+      <span class="hist-date">${d}</span>
+      <span class="hist-scores">${line}</span>
+      <span class="hist-flag ${e.settled ? "on" : "off"}">${e.settled ? "✓ 已结算" : "未结算"}${reviewTxt}</span>
+    </div>`;
+    html += `<div class="hist-detail" id="histd_${d}" hidden>${detailItems || '<span style="color:var(--dim)">（无打卡明细）</span>'}</div>`;
+  }
+  panel.innerHTML = html;
+}
+function toggleHistDetail(d) {
+  const el = document.getElementById(`histd_${d}`);
+  if (el) el.hidden = !el.hidden;
+}
+
+function resetAll() {
+  if (confirm("确定清空全部数据？（历史存档、属性点、等级、成就、目标日期将全部永久删除）")) {
+    localStorage.removeItem(KEY);
+    state = { history: {} };
+    document.getElementById("weekPanel").hidden = true;
+    document.getElementById("achPanel").hidden = true;
+    document.getElementById("historyPanel").hidden = true;
+    document.getElementById("weekBtn").textContent = "📊 统计雷达";
+    document.getElementById("achBtn").textContent = "🏆 成就";
+    document.getElementById("histBtn").textContent = "📅 历史";
+    render();
+  }
+}
+
+/* ================= 启动 ================= */
+render();
+
+// PWA：注册 Service Worker（离线可用 + 可安装到手机主屏幕）
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => { /* 静默失败，不影响使用 */ });
+  });
+}
+</script>
+</body>
+</html>
