@@ -3,13 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>完美人生系统</title>
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0d1117">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="完美人生">
-<link rel="apple-touch-icon" href="icon-192.png">
+<title>知行合一</title>
 <style>
   :root {
     --bg: #0d1117;
@@ -61,6 +55,7 @@
   .badge-level { background: linear-gradient(135deg, #2ea043, #238636); box-shadow: 0 2px 10px rgba(46,160,67,.35); }
   .badge-streak { background: linear-gradient(135deg, #f0883e, #d9570c); box-shadow: 0 2px 10px rgba(240,136,62,.35); cursor: default; }
   .badge-exam { background: linear-gradient(135deg, #388bfd, #1f6feb); box-shadow: 0 2px 10px rgba(56,139,253,.35); }
+  .badge-spirit { background: linear-gradient(135deg, #da77f2, #9775fa); box-shadow: 0 2px 10px rgba(218,119,242,.35); cursor: pointer; }
   .today-score { font-size: 14px; color: var(--dim); }
   .today-score b { color: var(--text); font-size: 18px; margin-left: 4px; }
   .level-rule { margin-top: 10px; font-size: 12px; color: var(--dim); border-top: 1px dashed var(--border); padding-top: 8px; }
@@ -97,7 +92,7 @@
   .switch input { opacity: 0; width: 0; height: 0; }
   .slider { position: absolute; inset: 0; cursor: pointer; background: #30363d; border-radius: 99px; transition: .25s; }
   .slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #8b949e; border-radius: 50%; transition: .25s; }
-  .switch input:checked + .slider { background: var(--accent); }
+  .switch input:checked + .slider { background: var(--gold); }
   .switch input:checked + .slider::before { transform: translateX(18px); background: #fff; }
 
   input[type="number"] {
@@ -130,7 +125,6 @@
   .panel { margin-top: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
   .panel h3 { font-size: 14px; margin-bottom: 10px; color: var(--dim); font-weight: 600; }
 
-  /* 本周统计 */
   .week-chart { display: flex; align-items: flex-end; gap: 8px; height: 130px; padding-top: 6px; }
   .week-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; min-width: 0; }
   .week-val { font-size: 11px; color: var(--dim); font-variant-numeric: tabular-nums; }
@@ -141,7 +135,6 @@
   .week-label { font-size: 11px; color: var(--dim); }
   .radar-title { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 12.5px; color: var(--dim); text-align: center; }
 
-  /* 成就 */
   .ach-stats { font-size: 12.5px; color: var(--dim); margin-bottom: 10px; line-height: 1.8; }
   .ach-stats b { color: var(--gold); }
   .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
@@ -153,7 +146,6 @@
   .ach-card.unlocked .ach-name { color: var(--gold); }
   .ach-desc { color: var(--dim); font-size: 11px; }
 
-  /* 历史 */
   .hist-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 4px; border-bottom: 1px solid rgba(48,54,61,.5); font-size: 13px; }
   .hist-row:last-child { border-bottom: none; }
   .hist-date { color: var(--dim); font-size: 12px; }
@@ -169,7 +161,6 @@
   .flash { animation: flash .5s ease; }
   @keyframes flash { 0% { background: rgba(63,185,80,.25); } 100% { background: transparent; } }
 
-  /* 升级评价弹窗 */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(5,8,12,.78);
     display: flex; align-items: center; justify-content: center; z-index: 100;
@@ -206,16 +197,17 @@
 
 <header>
   <div class="title-row">
-    <h1>🌱 完美人生系统</h1>
+    <h1>🌱 知行合一</h1>
     <span class="date" id="dateLabel"></span>
   </div>
   <div class="status-row">
-    <div class="badge badge-level" id="charBadge" onclick="showRank()" title="点击查看当前称号">Lv.0</div>
+    <div class="badge badge-level" id="charBadge" onclick="showRank()" title="点击查看当前境界">凡人</div>
     <div class="badge badge-streak" id="streakBadge" title="连续打卡天数（断签归零）">🔥 连续 0 天</div>
+    <div class="badge badge-spirit" id="spiritBadge" onclick="setSpiritStones()" title="点击修改灵石总量">💎 110,000（×1.0）</div>
     <div class="badge badge-exam" id="examBadge" onclick="setExamDate()" title="点击设置/修改上岸目标日期">🎯 设个上岸目标</div>
     <div class="today-score">今日得分 <b id="todayTotal">0</b></div>
   </div>
-  <div class="level-rule">升级规则：四属性均达 1 级（30 点）→ 角色 +1 级；单项满 30 点自动升级，溢出点数滚入下一级。升级有惊喜（毒舌）评价。</div>
+  <div class="level-rule">修炼规则：四属性各满 30 点升 1 层（每10层突破大境界）。完整境界：凡人→炼气→筑基→金丹→元婴→化神→炼虚→合体→大乘→渡劫→飞升</div>
 </header>
 
 <main class="attr-grid" id="attrGrid"><!-- cards injected --></main>
@@ -227,6 +219,7 @@
     <button class="ghost-btn" id="achBtn" onclick="toggleAchievements()">🏆 成就</button>
     <button class="ghost-btn" onclick="showRandomQuote()">🎲 语录</button>
     <button class="ghost-btn" id="histBtn" onclick="toggleHistory()">📅 历史</button>
+    <button class="ghost-btn" id="makeupBtn" onclick="enterMakeupMode()">⏪ 补签</button>
   </div>
   <div class="row-btns">
     <button class="ghost-btn" onclick="exportData()">💾 导出备份</button>
@@ -242,27 +235,29 @@
 
 <div class="modal-overlay" id="levelModal" hidden>
   <div class="modal">
-    <div class="modal-glow" id="mGlow">⚡ LEVEL UP ⚡</div>
-    <div class="modal-title" id="mTitle">Lv.1</div>
-    <div class="modal-rank" id="mRank">称号</div>
+    <div class="modal-glow" id="mGlow">✨ 境界突破 ✨</div>
+    <div class="modal-title" id="mTitle">炼气1层</div>
+    <div class="modal-rank" id="mRank">境界</div>
     <div class="modal-desc" id="mDesc">评价</div>
-    <button onclick="closeModal()" id="mBtn">继续变强 💪</button>
+    <button onclick="closeModal()" id="mBtn">继续修炼 💪</button>
   </div>
 </div>
 
 <script>
 /* ================= 配置 ================= */
 const CONFIG = {
-  appName: "完美人生系统",
+  appName: "知行合一",
   character: { name: "杨裕珏" },
   attributes: {
     body: {
       label: "体魄", accent: "var(--accent-body)",
       items: [
-        { id: "body_gym",   name: "健身/力量训练45分钟起", points: 1.0, type: "boolean" },
+        { id: "body_gym",   name: "健身/力量训练30分钟起", points: 1.0, type: "boolean" },
+        { id: "body_eyes",   name: "护眼（远眺+眨眼操）",    points: 0.2, type: "boolean" },
         { id: "body_sleep", name: "12点前睡",              points: 0.3, type: "boolean" },
         { id: "body_nosnack", name: "不吃零食/不喝甜饮",    points: 0.2, type: "boolean" },
         { id: "body_wall",  name: "靠墙站10分钟",          points: 0.1, type: "boolean" },
+        { id: "body_shower",name: "洗浴",                    points: 0.15, type: "boolean" },
         { id: "body_water", name: "喝水（建议1500-2000ml）", type: "progress", unit: "ml",
           dailyRequirement: 2000, points: 0.15,
           rule: "按比例计分：喝满2000ml得+0.15，多喝不额外加分" }
@@ -274,7 +269,7 @@ const CONFIG = {
         { id: "know_study", name: "考公学习（刷题+看视频）", type: "study", unit: "小时",
           pointsPerHour: 0.5,
           rule: "每学满1小时打卡1次 +0.5；多学多加分，上不封顶（学2h=2次卡+1.0）" },
-        { id: "know_english",  name: "英语30分钟",           points: 0.25, type: "boolean" },
+        { id: "know_english",  name: "学习英语",           points: 0.25, type: "boolean" },
         { id: "know_read",     name: "阅读30分钟（可选）",    points: 0.25, type: "boolean" }
       ]
     },
@@ -282,66 +277,101 @@ const CONFIG = {
       label: "技能", accent: "var(--accent-skill)",
       items: [
         {
-          id: "skill_writing", name: "写作（硬性底线8000字）", type: "progress", unit: "字",
-          dailyRequirement: 8000, stepSize: 2000, pointsPerStep: 0.15,
-          maxPoints: null, penaltyPerMissingStep: 0.3,
-          formula: "基础8000字=+0.6；每多2000字额外+0.15，上不封顶；不足按公式倒扣（可负分）"
+          id: "skill_writing", name: "写作", type: "progress", unit: "字",
+          stepSize: 2000, pointsPerStep: 0.15,
+          maxPoints: null,
+          formula: "每写2000字+0.15，上不封顶，不扣分"
         },
         { id: "skill_post", name: "支付宝帖子2篇（硬性）", type: "progress", unit: "篇",
           dailyRequirement: 2, points: 0.3,
           rule: "不足2篇该项记0，不给部分分" },
         { id: "skill_review",  name: "每日复盘+明日计划", points: 0.25, type: "boolean" },
-        { id: "skill_practice",name: "专项刻意练习45分钟（可选）", points: 0.5, type: "boolean" }
+        { id: "skill_practice",name: "刻意练习（可选）",    points: 0.5, type: "boolean" }
       ]
     },
     charm: {
       label: "魅力", accent: "var(--accent-charm)",
       items: [
         { id: "charm_wakeup",    name: "准时起（固定时间）", points: 0.1, type: "boolean" },
-        { id: "charm_posture",   name: "挺胸抬头",          points: 0.3, type: "boolean" },
+        { id: "charm_posture",   name: "挺胸抬头",          points: 0.5, type: "boolean" },
         { id: "charm_skincare",  name: "护肤（早晚各一次）", type: "skincare",
           morningPoints: 0.05, nightPoints: 0.05,
           rule: "早晚都做+0.1；只做一次+0.05；都不做0" },
         { id: "charm_meditation",name: "静默/冥想10分钟",    points: 0.2, type: "boolean" },
-        { id: "charm_speech",    name: "克制性发言（想插嘴/抱怨/炫耀时闭嘴）", points: 0.3, type: "boolean" },
-        { id: "charm_praise",    name: "赞美别人一次",       points: 0.15, type: "boolean" }
+        { id: "charm_speech",    name: "克制性发言（想插嘴/抱怨/炫耀时闭嘴）", points: 0.5, type: "boolean" },
+        { id: "charm_praise",    name: "赞美别人一次",       points: 0.3, type: "boolean" },
+        { id: "charm_dress",     name: "穿搭得体",           points: 0.3, type: "boolean" },
+        { id: "charm_selfctrl",  name: "克己（遵守给自己的约定，如游戏不超时）", type: "discipline", passPoints: 0.3, failPenalty: 0.2 },
+        { id: "charm_anger",     name: "制怒（控制脾气不发火）",       type: "discipline", passPoints: 0.3, failPenalty: 0.2 }
       ]
     }
   },
   maxPerLevel: 30
 };
 
-/* 等级称号表（Lv.0-8 固定，Lv.9+ 动态扩展） */
-const RANKS = [
-  { title: "芸芸众生", desc: "丢进人群毫无亮点，连奶茶店第二杯半价都轮不到你。但没关系，系统已就位，练起来。" },
-  { title: "路明非般的废柴", desc: "废柴中的战斗机，衰得理直气壮。但至少你开始动了——废柴不可怕，躺平才可怕。" },
-  { title: "觉醒的杂鱼", desc: "小透明，考公路上的一颗螺丝钉。还没人注意到你，但时间都记着你的每次打卡。" },
-  { title: "楚子航本人级别", desc: "面瘫、自律、卷王之王。眼神里开始有杀气，刷题速度令人窒息——没人再敢把你当小透明。" },
-  { title: "凯撒·加图索级", desc: "人群中的主角，自带聚光灯。成绩单和存在感一起起飞。" },
-  { title: "上杉绘梨衣级", desc: "沉默中爆发的怪物，数据会说话。你的打卡记录本身就是一部恐怖片。" },
-  { title: "昂热校长级", desc: "活成了传说的老卷王。你的经验条，是别人仰望的天花板。" },
-  { title: "言灵·王权持有者", desc: "行走的挂。上岸对你只是时间问题，考公只是走个过场。" },
-  { title: "屠龙者", desc: "系统已无法承载你的强度。建议直接去当出题人，或者征服星辰大海。" }
-];
+/* ================= 修仙境界 ================= */
+function realmLabel(level) {
+  if (level <= 0) return "凡人";
+  const realms = ["炼气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "大乘", "渡劫", "飞升"];
+  const idx = Math.floor((level - 1) / 10);
+  const layer = ((level - 1) % 10) + 1;
+  if (idx >= realms.length) return `飞升${layer}层`;
+  return `${realms[idx]}${layer}层`;
+}
+
 function rankFor(level) {
-  if (level < RANKS.length) return RANKS[level];
-  // Lv.8 之后动态扩展称号
-  const turn = level - (RANKS.length - 1);
-  const dyn = [
-    { t: `屠龙者·${turn}转`, d: `第 ${turn} 次转世屠龙，你已经把系统玩坏了。等级 ${level}，超出凡人理解范畴。` },
-  ][0];
-  if (turn <= 3) return { title: dyn.t, desc: dyn.d };
-  if (turn <= 6) return { title: `超越系统的存在·${turn}阶`, desc: `等级 ${level}。系统已经算不清你的上限，建议你直接入职出题组，给后来人一点活路。` };
-  return { title: `天道·完美人生·${turn}阶`, desc: `等级 ${level}。你已不是玩家，你是规则本身。完美人生？不，你就是完美人生。` };
+  if (level <= 0) return { title: "凡人", desc: "连灵气都感应不到的普通人。系统建议：先从每天修炼30分钟开始。" };
+  const realms = ["炼气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "大乘", "渡劫", "飞升"];
+  const idx = Math.floor((level - 1) / 10);
+  const layer = ((level - 1) % 10) + 1;
+  if (idx >= realms.length) {
+    return { title: `飞升${layer}层`, desc: `等级 ${level}。已飞升上界，超脱凡尘。系统已无法评估你的上限，你本身就是规则。` };
+  }
+  const realm = realms[idx];
+  const title = `${realm}${layer}层`;
+  const descs = [
+    `刚刚踏入修仙门槛，气感初成。体内真气如游丝，但好歹算入门了。炼气${layer}层，继续努力。`,
+    `丹田已固，根基初成。在宗门里能当个外门弟子了。筑基${layer}层，稳住发育别浪。`,
+    `金丹已成，寿命大增。可以横着走了——但别遇到元婴老怪。金丹${layer}层。`,
+    `元婴出窍，神识万里。可以开宗立派了。元婴${layer}层，离化神一步之遥。`,
+    `化神归真，超凡入圣。连系统都想给你鼓掌。化神${layer}层。`,
+    `炼虚合道，与天地共鸣。炼虚${layer}层，你本身就是一部功法。`,
+    `天人合一，万法归宗。合体${layer}层，系统已经算不清你的上限了。`,
+    `大乘圆满，只差一步渡劫。大乘${layer}层——记住渡劫时别穿白衣服，血溅上去不好洗。`,
+    `天劫在头顶，雷电在咆哮。渡劫${layer}层，扛过去就是飞升！`,
+  ];
+  return { title, desc: descs[idx] || `等级 ${level}，系统已无法评估。` };
+}
+
+/* ================= 灵石修炼速率 ================= */
+function spiritMultiplier(stones) {
+  const step = Math.floor(stones / 50000);
+  return Math.min(1.0 + step * 0.2, 5.0);
 }
 
 /* ================= 数据层 ================= */
 const KEY = "yyj_growth_system_v1";
+const DATA_VERSION = 2;
 let state = load();
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(KEY)) || { history: {} }; }
-  catch { return { history: {} }; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY));
+    if (raw) {
+      if (raw.spiritStones === undefined) raw.spiritStones = 110000;
+      if (!raw.streakRewards) raw.streakRewards = [];
+      if (!raw.bonusPoints) raw.bonusPoints = { body: 0, knowledge: 0, skill: 0, charm: 0 };
+      if (raw.dataVersion === DATA_VERSION) return raw;
+      if (Object.keys(raw.history || {}).length > 0) {
+        if (confirm("检测到旧版本数据。建议清空历史数据从今天重新开始。\n\n选「确定」→ 清空数据\n选「取消」→ 保留旧数据")) {
+          localStorage.removeItem(KEY);
+          return { history: {}, dataVersion: DATA_VERSION, spiritStones: 110000, streakRewards: [], bonusPoints: { body: 0, knowledge: 0, skill: 0, charm: 0 } };
+        }
+      }
+      return { ...raw, history: raw?.history || {}, dataVersion: DATA_VERSION, spiritStones: raw.spiritStones || 110000, streakRewards: raw.streakRewards || [], bonusPoints: raw.bonusPoints || { body: 0, knowledge: 0, skill: 0, charm: 0 } };
+    }
+    return { history: {}, dataVersion: DATA_VERSION, spiritStones: 110000, streakRewards: [], bonusPoints: { body: 0, knowledge: 0, skill: 0, charm: 0 } };
+  } catch { return { history: {}, dataVersion: DATA_VERSION, spiritStones: 110000, streakRewards: [], bonusPoints: { body: 0, knowledge: 0, skill: 0, charm: 0 } }; }
 }
 function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
 
@@ -349,17 +379,28 @@ function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
-function weekday() { return ["日","一","二","三","四","五","六"][new Date().getDay()]; }
+function weekday(dateStr) {
+  const d = dateStr ? new Date(dateStr + "T00:00:00") : new Date();
+  return ["日","一","二","三","四","五","六"][d.getDay()];
+}
 const TODAY = todayStr();
 
+let _makeupDate = null; // 补签模式：设为昨天日期字符串则查看/结算昨天
+
+function activeDate() {
+  return _makeupDate || todayStr();
+}
+
 function todayEntry() {
-  if (!state.history[TODAY]) state.history[TODAY] = { items: {}, scores: null, settled: false };
-  return state.history[TODAY];
+  const target = activeDate();
+  if (!state.history[target]) state.history[target] = { items: {}, scores: null, settled: false };
+  return state.history[target];
 }
 
 /* ================= 计分核心 ================= */
 function calcItemScore(item, value) {
   if (item.type === "boolean") return value ? item.points : 0;
+  if (item.type === "discipline") return value ? item.passPoints : -item.failPenalty;
   if (item.type === "skincare") {
     if (!value) return 0;
     return (value.m ? item.morningPoints : 0) + (value.n ? item.nightPoints : 0);
@@ -372,8 +413,7 @@ function calcItemScore(item, value) {
     if (item.id === "skill_writing") {
       const words = Number(value) || 0;
       const steps = Math.floor(words / 2000);
-      const missing = Math.max(0, 4 - steps);
-      return item.pointsPerStep * steps - item.penaltyPerMissingStep * missing;
+      return item.pointsPerStep * steps;
     }
     if (item.id === "skill_post") {
       const n = Number(value) || 0;
@@ -404,6 +444,8 @@ function totals() {
       for (const k in t) t[k] += entry.scores[k] || 0;
     }
   }
+  const bp = state.bonusPoints || {};
+  for (const k in t) t[k] += bp[k] || 0;
   return t;
 }
 
@@ -435,7 +477,7 @@ function buildCard(key, attr, info) {
     <div class="card-head">
       <div class="head-line">
         <span class="attr-name">${attr.label}</span>
-        <span class="attr-level" id="lvl_${key}">Lv.${info.level}</span>
+        <span class="attr-level" id="lvl_${key}">${realmLabel(info.level)}</span>
       </div>
       <div class="progress"><div class="bar" id="bar_${key}" style="width:${pct(info.current)}%"></div></div>
       <div class="points-row"><span>本级进度</span><span id="pts_${key}"><b>${fmt(info.current)}</b> / ${CONFIG.maxPerLevel}</span></div>
@@ -454,10 +496,13 @@ function scoreClass(n) { return n > 0 ? "pos" : n < 0 ? "neg" : "zero"; }
 function scoreText(n) { return (n > 0 ? "+" : "") + fmt(n); }
 
 function buildItem(attrKey, item) {
-  if (item.type === "boolean") {
+  if (item.type === "boolean" || item.type === "discipline") {
+    const tag = item.type === "discipline"
+      ? `做到+${item.passPoints}/破戒-${item.failPenalty}`
+      : `+${item.points}`;
     return `
       <div class="item">
-        <span class="item-name">${item.name}<span class="tag">+${item.points}</span></span>
+        <span class="item-name">${item.name}<span class="tag">${tag}</span></span>
         <span class="item-score" id="sc_${item.id}">0</span>
         <label class="switch">
           <input type="checkbox" data-item="${item.id}" onchange="onChange('${item.id}')">
@@ -488,13 +533,13 @@ function buildItem(attrKey, item) {
   }
   if (item.type === "progress") {
     const hint = item.id === "skill_writing"
-      ? `基础8000字=+0.6，每多2000字再+0.15（不封顶）；不足按公式倒扣`
+      ? `每写2000字+0.15，上不封顶，不扣分`
       : item.id === "body_water"
         ? `按比例计分：喝满 ${item.dailyRequirement}ml 得 +${item.points}，多喝不加分（建议每天 1500-2000ml）`
         : `≥${item.dailyRequirement}${item.unit} +${item.points}，不足整项记0`;
     return `
       <div class="item">
-        <span class="item-name">${item.name}<span class="tag">${item.id==="skill_writing"?"每+2000字+0.15":"进度"}</span></span>
+        <span class="item-name">${item.name}<span class="tag">${item.id==="skill_writing"?"每2000字+0.15":"进度"}</span></span>
         <span class="item-score" id="sc_${item.id}">0</span>
         <input type="number" min="0" placeholder="${item.unit}" data-item="${item.id}" oninput="onInput('${item.id}')">
       </div>
@@ -521,7 +566,7 @@ function render() {
         if (it.type === "skincare") {
           if (inp.dataset.slot === "m") inp.checked = !!(val && val.m);
           if (inp.dataset.slot === "n") inp.checked = !!(val && val.n);
-        } else if (it.type === "boolean") {
+        } else if (it.type === "boolean" || it.type === "discipline") {
           inp.checked = !!val;
         } else {
           inp.value = (val === null || val === undefined) ? "" : val;
@@ -530,11 +575,16 @@ function render() {
     }
   }
 
-  document.getElementById("charBadge").textContent = `Lv.${info.characterLevel}`;
+  const ad = activeDate();
+  const isMakeup = !!_makeupDate;
+  document.getElementById("charBadge").textContent = realmLabel(info.characterLevel);
   document.getElementById("streakBadge").textContent = `🔥 连续 ${computeStreak()} 天`;
-  document.getElementById("dateLabel").textContent = `${TODAY} 周${weekday()}`;
+  document.getElementById("dateLabel").textContent = `${ad} 周${weekday(ad)}${isMakeup ? ' ⏪ 补签模式' : ''}`;
 
-  // 考公倒计时
+  const stones = state.spiritStones || 0;
+  const mult = spiritMultiplier(stones);
+  document.getElementById("spiritBadge").textContent = `💎 ${stones.toLocaleString()}（×${mult}）`;
+
   const ed = examDays();
   const eb = document.getElementById("examBadge");
   if (ed === null) eb.textContent = "🎯 设个上岸目标";
@@ -544,10 +594,10 @@ function render() {
 
   const btn = document.getElementById("settleBtn");
   if (entry.settled) {
-    btn.textContent = "✅ 今日已结算（修改后点此更新）";
+    btn.textContent = isMakeup ? "✅ 昨日已补签" : "✅ 今日已结算（修改后点此更新）";
     btn.classList.add("settled");
   } else {
-    btn.textContent = "✅ 结算今日得分";
+    btn.textContent = isMakeup ? "📝 补签昨日打卡" : "✅ 结算今日得分";
     btn.classList.remove("settled");
   }
 
@@ -588,7 +638,7 @@ function collectItems() {
   for (const [key, attr] of Object.entries(CONFIG.attributes)) {
     for (const it of attr.items) {
       const inputs = document.querySelectorAll(`input[data-item="${it.id}"]`);
-      if (it.type === "boolean") {
+      if (it.type === "boolean" || it.type === "discipline") {
         inputs.forEach(inp => { if (inp.type === "checkbox") items[it.id] = inp.checked; });
       } else if (it.type === "skincare") {
         const m = document.querySelector(`input[data-item="${it.id}"][data-slot="m"]`);
@@ -607,32 +657,113 @@ function collectItems() {
 function onChange(id) { const items = collectItems(); todayEntry().items = items; save(); updateScores(); }
 function onInput(id) { const items = collectItems(); todayEntry().items = items; save(); updateScores(); }
 
+/* ================= 连续打卡神秘奖励 ================= */
+const STREAK_BONUSES = [
+  { days: 7, points: { body: 0.3, knowledge: 0.3, skill: 0.3, charm: 0.3 }, name: "七日筑基" },
+  { days: 30, points: { body: 1.0, knowledge: 1.0, skill: 1.0, charm: 1.0 }, name: "一月入道" },
+  { days: 100, points: { body: 3.0, knowledge: 3.0, skill: 3.0, charm: 3.0 }, name: "百日筑基" },
+  { days: 365, points: { body: 10.0, knowledge: 10.0, skill: 10.0, charm: 10.0 }, name: "一年飞升" }
+];
+
+function checkStreakBonus() {
+  const streak = computeStreak();
+  const claimed = state.streakRewards || [];
+  for (const b of STREAK_BONUSES) {
+    if (streak >= b.days && !claimed.includes(b.days)) {
+      state.streakRewards = [...claimed, b.days];
+      if (!state.bonusPoints) state.bonusPoints = { body: 0, knowledge: 0, skill: 0, charm: 0 };
+      for (const k in b.points) state.bonusPoints[k] = (state.bonusPoints[k] || 0) + b.points[k];
+      save();
+      const pointStr = Object.entries(b.points).map(([k, v]) => {
+        const labels = { body: "体魄", knowledge: "学识", skill: "技能", charm: "魅力" };
+        return `${labels[k]}+${v}`;
+      }).join("，");
+      showModal("🎁 神秘宝箱", `连续打卡 ${b.days} 天`, `✨「${b.name}」成就达成`, `恭喜连续打卡 ${b.days} 天！获得修为奖励：\n${pointStr}\n\n继续坚持，下一个里程碑在等你！`, "收下奖励 🎉");
+      return true;
+    }
+  }
+  return false;
+}
+
 function settle() {
   const entry = todayEntry();
   const items = collectItems();
   entry.items = items;
-  entry.scores = computeScores(items);
+
+  const baseScores = computeScores(items);
+  const mult = spiritMultiplier(state.spiritStones || 0);
+  entry.scores = {};
+  for (const k in baseScores) {
+    entry.scores[k] = Math.round(baseScores[k] * mult * 1000) / 1000;
+  }
   entry.settled = true;
   save();
 
-  const review = dailyReview(entry.scores, entry.items);
+  const review = dailyReview(baseScores, items);
   entry.review = review;
   save();
+
+  const gotBonus = checkStreakBonus();
 
   const info = levelsOf(totals());
   const prev = (state.lastCharLevel === undefined) ? info.characterLevel : state.lastCharLevel;
   state.lastCharLevel = info.characterLevel;
   save();
 
+  // 补签模式结算后自动退出
+  if (_makeupDate) {
+    _makeupDate = null;
+  }
+
   render();
   document.getElementById("settleBtn").classList.add("flash");
 
-  if (info.characterLevel > prev) {
+  if (gotBonus) {
+    pendingAfterClose = review;
+  } else if (info.characterLevel > prev) {
     pendingAfterClose = review;
     showLevelUp(info.characterLevel);
   } else {
     showModal(review.glow, review.title, review.rank, review.desc, review.btn);
   }
+}
+
+/* ================= 补签 ================= */
+function enterMakeupMode() {
+  const y = makeupDateStr();
+  const yEntry = state.history[y];
+  if (yEntry && yEntry.settled) {
+    alert("昨天已经打过卡了，不用补签 ✅");
+    return;
+  }
+  if (_makeupDate) {
+    _makeupDate = null; // 再次点击退出补签模式
+    render();
+    return;
+  }
+  _makeupDate = y;
+  render();
+}
+function exitMakeupMode() {
+  _makeupDate = null;
+  render();
+}
+function makeupDateStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+/* ================= 灵石设置 ================= */
+function setSpiritStones() {
+  const current = state.spiritStones !== undefined ? state.spiritStones : 110000;
+  const v = prompt("输入当前灵石总量（即你的存款总额）：", current.toLocaleString());
+  if (v === null) return;
+  const n = Number(v.replace(/,/g, ""));
+  if (isNaN(n) || n < 0) { alert("请输入有效数字"); return; }
+  state.spiritStones = Math.round(n);
+  save();
+  render();
 }
 
 /* ================= 连续打卡 & 考公倒计时 ================= */
@@ -689,14 +820,8 @@ function weekStats() {
 function toggleWeek() {
   const panel = document.getElementById("weekPanel");
   const btn = document.getElementById("weekBtn");
-  if (panel.hidden) {
-    renderWeek();
-    panel.hidden = false;
-    btn.textContent = "📊 收起统计";
-  } else {
-    panel.hidden = true;
-    btn.textContent = "📊 统计雷达";
-  }
+  if (panel.hidden) { renderWeek(); panel.hidden = false; btn.textContent = "📊 收起统计"; }
+  else { panel.hidden = true; btn.textContent = "📊 统计雷达"; }
 }
 
 function renderWeek() {
@@ -712,7 +837,7 @@ function renderWeek() {
     </div>`;
   }
   html += `</div>`;
-  html += `<div class="radar-title">— 四维成长雷达（累计属性）—</div>${radarSvg()}`;
+  html += `<div class="radar-title">— 四维修炼雷达（累计属性）—</div>${radarSvg()}`;
   html += `<div class="hint">柱子越高得分越多；金色为今天。连续打卡按「已结算」天数计算，断一天即归零。</div>`;
   document.getElementById("weekPanel").innerHTML = html;
 }
@@ -725,16 +850,13 @@ function radarSvg() {
   const angles = [-90, 0, 90, 180].map(a => a * Math.PI / 180);
   const labels = ["体魄", "学识", "技能", "魅力"];
   const colors = ["#ff6b6b", "#4dabf7", "#b197fc", "#f783ac"];
-
   let rings = "";
   for (let ring = 1; ring <= 3; ring++) {
     const pts = angles.map(a => `${(cx + r * ring/3 * Math.cos(a)).toFixed(1)},${(cy + r * ring/3 * Math.sin(a)).toFixed(1)}`).join(" ");
     rings += `<polygon points="${pts}" fill="none" stroke="#30363d" stroke-width="1"/>`;
   }
   let axes = "";
-  angles.forEach(a => {
-    axes += `<line x1="${cx}" y1="${cy}" x2="${(cx + r * Math.cos(a)).toFixed(1)}" y2="${(cy + r * Math.sin(a)).toFixed(1)}" stroke="#30363d" stroke-width="1"/>`;
-  });
+  angles.forEach(a => { axes += `<line x1="${cx}" y1="${cy}" x2="${(cx + r * Math.cos(a)).toFixed(1)}" y2="${(cy + r * Math.sin(a)).toFixed(1)}" stroke="#30363d" stroke-width="1"/>`; });
   const dataPts = vals.map((v, i) => `${(cx + r * Math.max(0.03, v / maxV) * Math.cos(angles[i])).toFixed(1)},${(cy + r * Math.max(0.03, v / maxV) * Math.sin(angles[i])).toFixed(1)}`).join(" ");
   let dots = "", texts = "";
   vals.forEach((v, i) => {
@@ -752,18 +874,27 @@ function radarSvg() {
 /* ================= 成就系统 ================= */
 const ACHIEVEMENTS = [
   { id: "first_settle", icon: "🌱", name: "初次入道", desc: "完成第一次结算" },
+  { id: "settled10",    icon: "📅", name: "十日筑基", desc: "累计结算 10 天" },
+  { id: "settled50",    icon: "📅", name: "五十日磨砺", desc: "累计结算 50 天" },
   { id: "streak3",      icon: "🔥", name: "三日之约", desc: "连续打卡 3 天" },
   { id: "streak7",      icon: "⚡", name: "一周战神", desc: "连续打卡 7 天" },
   { id: "streak30",     icon: "👑", name: "满月传说", desc: "连续打卡 30 天" },
+  { id: "study50",      icon: "📖", name: "半百书生", desc: "累计学习 50 小时" },
   { id: "study100",     icon: "📚", name: "百时苦读", desc: "累计学习 100 小时" },
   { id: "study500",     icon: "🧠", name: "学海无涯", desc: "累计学习 500 小时" },
+  { id: "write50k",     icon: "✏️", name: "五万笔耕", desc: "累计写作 5 万字" },
   { id: "write100k",    icon: "✍️", name: "十万写手", desc: "累计写作 10 万字" },
   { id: "write500k",    icon: "📝", name: "码字之王", desc: "累计写作 50 万字" },
-  { id: "char3",        icon: "🐉", name: "觉醒者", desc: "角色等级达到 Lv.3" },
-  { id: "char5",        icon: "🌟", name: "传说级", desc: "角色等级达到 Lv.5" },
-  { id: "char8",        icon: "💫", name: "屠龙者", desc: "角色等级达到 Lv.8" },
+  { id: "body5",        icon: "💪", name: "体魄小成", desc: "体魄累计达 5 分" },
+  { id: "knowledge5",   icon: "🎓", name: "学识小成", desc: "学识累计达 5 分" },
+  { id: "skill5",       icon: "🛠️", name: "技能小成", desc: "技能累计达 5 分" },
+  { id: "charm5",       icon: "💎", name: "魅力小成", desc: "魅力累计达 5 分" },
+  { id: "char3",        icon: "🐉", name: "觉醒者", desc: "角色达到炼气3层" },
+  { id: "char5",        icon: "🌟", name: "小有成就", desc: "角色达到炼气5层" },
+  { id: "char8",        icon: "💫", name: "炼气圆满", desc: "角色达到炼气10层" },
   { id: "perfect_day",  icon: "💯", name: "完美一天", desc: "单日得分 ≥ 5" },
-  { id: "balanced",     icon: "⚖️", name: "四维均衡", desc: "四个属性均达到 Lv.1" }
+  { id: "balanced",     icon: "⚖️", name: "初入炼气", desc: "四属性均达到炼气1层" },
+  { id: "balanced2",    icon: "⚖️", name: "筑基有成", desc: "四属性均达到筑基1层（2层）" }
 ];
 
 function achievementStatus() {
@@ -773,68 +904,43 @@ function achievementStatus() {
   const tot = totals();
   const info = levelsOf(tot);
   let studyHours = 0, writeWords = 0, bestDay = 0;
+  let gymCount = 0, waterOk = 0, wakeupCount = 0;
   for (const e of Object.values(state.history)) {
     if (!e.settled) continue;
     if (e.items) {
       studyHours += Number(e.items.know_study) || 0;
       writeWords += Number(e.items.skill_writing) || 0;
+      if (e.items.body_gym) gymCount++;
+      if (Number(e.items.body_water) >= 2000) waterOk++;
+      if (e.items.charm_wakeup) wakeupCount++;
     }
-    const t = dayTotal(e);
-    if (t !== null) bestDay = Math.max(bestDay, t);
+    const t = dayTotal(e); if (t !== null) bestDay = Math.max(bestDay, t);
   }
   const minLevel = Math.min(info.body.level, info.knowledge.level, info.skill.level, info.charm.level);
   const tests = {
-    first_settle: settledCount >= 1,
-    streak3: streak >= 3,
-    streak7: streak >= 7,
-    streak30: streak >= 30,
-    study100: studyHours >= 100,
-    study500: studyHours >= 500,
-    write100k: writeWords >= 100000,
-    write500k: writeWords >= 500000,
-    char3: info.characterLevel >= 3,
-    char5: info.characterLevel >= 5,
-    char8: info.characterLevel >= 8,
-    perfect_day: bestDay >= 5,
-    balanced: minLevel >= 1
+    first_settle: settledCount >= 1, settled10: settledCount >= 10, settled50: settledCount >= 50,
+    streak3: streak >= 3, streak7: streak >= 7, streak30: streak >= 30,
+    study50: studyHours >= 50, study100: studyHours >= 100, study500: studyHours >= 500,
+    write50k: writeWords >= 50000, write100k: writeWords >= 100000, write500k: writeWords >= 500000,
+    body5: tot.body >= 5, knowledge5: tot.knowledge >= 5, skill5: tot.skill >= 5, charm5: tot.charm >= 5,
+    char3: info.characterLevel >= 3, char5: info.characterLevel >= 5, char8: info.characterLevel >= 8,
+    perfect_day: bestDay >= 5, balanced: minLevel >= 1, balanced2: minLevel >= 2
   };
-  return {
-    tests,
-    stats: {
-      settledCount, streak,
-      studyHours: Math.round(studyHours), writeWords: Math.round(writeWords),
-      bestDay, characterLevel: info.characterLevel
-    }
-  };
+  return { tests, stats: { settledCount, streak, studyHours: Math.round(studyHours), writeWords: Math.round(writeWords), bestDay, characterLevel: info.characterLevel } };
 }
 
 function toggleAchievements() {
-  const panel = document.getElementById("achPanel");
-  const btn = document.getElementById("achBtn");
-  if (panel.hidden) {
-    renderAchievements();
-    panel.hidden = false;
-    btn.textContent = "🏆 收起成就";
-  } else {
-    panel.hidden = true;
-    btn.textContent = "🏆 成就";
-  }
+  const p = document.getElementById("achPanel");
+  const b = document.getElementById("achBtn");
+  if (p.hidden) { renderAchievements(); p.hidden = false; b.textContent = "🏆 收起成就"; }
+  else { p.hidden = true; b.textContent = "🏆 成就"; }
 }
-
 function renderAchievements() {
   const { tests, stats } = achievementStatus();
   const unlocked = Object.values(tests).filter(Boolean).length;
   let html = `<h3>🏆 成就系统（${unlocked}/${ACHIEVEMENTS.length} 已解锁）</h3>`;
-  html += `<div class="ach-stats">已结算 <b>${stats.settledCount}</b> 天 · 连续 <b>${stats.streak}</b> 天 · 累计学习 <b>${stats.studyHours}</b> 小时 · 累计写作 <b>${stats.writeWords}</b> 字 · 最佳单日 <b>${stats.bestDay}</b> 分 · 角色 <b>Lv.${stats.characterLevel}</b></div>`;
-  html += `<div class="ach-grid">`;
-  for (const a of ACHIEVEMENTS) {
-    const done = !!tests[a.id];
-    html += `<div class="ach-card ${done ? "unlocked" : "locked"}">
-      <div class="ach-icon">${done ? a.icon : "🔒"}</div>
-      <div class="ach-name">${a.name}</div>
-      <div class="ach-desc">${a.desc}</div>
-    </div>`;
-  }
+  html += `<div class="ach-stats">已结算 <b>${stats.settledCount}</b> 天 · 连续 <b>${stats.streak}</b> 天 · 累计学习 <b>${stats.studyHours}</b> 小时 · 累计写作 <b>${stats.writeWords}</b> 字 · 最佳单日 <b>${stats.bestDay}</b> 分 · 境界 <b>${realmLabel(stats.characterLevel)}</b></div><div class="ach-grid">`;
+  for (const a of ACHIEVEMENTS) html += `<div class="ach-card ${tests[a.id] ? "unlocked" : "locked"}"><div class="ach-icon">${tests[a.id] ? a.icon : "🔒"}</div><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div></div>`;
   html += `</div>`;
   document.getElementById("achPanel").innerHTML = html;
 }
@@ -842,57 +948,92 @@ function renderAchievements() {
 /* ================= 数据备份 ================= */
 function exportData() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `完美人生系统备份_${todayStr()}.json`;
-  document.body.appendChild(a);
-  a.click();
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `知行合一备份_${todayStr()}.json`;
+  document.body.appendChild(a); a.click();
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 100);
 }
-
 function importData() { document.getElementById("importFile").click(); }
 document.getElementById("importFile").addEventListener("change", (e) => {
-  const f = e.target.files[0];
-  e.target.value = "";
+  const f = e.target.files[0]; e.target.value = "";
   if (!f) return;
   const reader = new FileReader();
   reader.onload = () => {
     try {
       const data = JSON.parse(reader.result);
       if (!data || typeof data.history !== "object") throw new Error("bad");
-      if (confirm("导入将覆盖当前所有数据（含历史存档、等级、目标日期），确定继续吗？")) {
-        state = data;
-        save();
-        render();
-        alert("✅ 导入成功！数据已恢复。");
-      }
-    } catch { alert("❌ 导入失败：文件格式不正确或已损坏。"); }
+      if (confirm("导入将覆盖当前所有数据，确定继续吗？")) { state = data; save(); render(); alert("✅ 导入成功！"); }
+    } catch { alert("❌ 导入失败。"); }
   };
   reader.readAsText(f);
 });
 
 /* ================= 系统语录 ================= */
 const QUOTES = [
-  "系统翻阅了你的今日记录，差点笑出声：就这？",
-  "你的对手正在刷题，而你正在刷这个系统——加油，未来可期（狗头）。",
-  "写作 8000 字是底线不是天花板，别给自己发好人卡。",
-  "今天没学满 2 小时？系统建议你对着镜子念三遍「我配考上吗」。",
-  "连续打卡断了？没关系，反正系统已经习惯了你的间歇性努力。",
-  "你上次「明天一定」是哪天？系统帮你数着呢。",
-  "健身没去、零食照吃、水都不喝——你是想修炼成干尸吗？",
-  "别人上岸你摸鱼，别人加班你熬夜——时间管理大师（反向）。",
-  "你每多学一小时，上岸概率就 +1%——这不是鸡汤，是数学。",
-  "系统检测到你还在这里打卡，这本身就是最了不起的天赋。",
-  "记住：路明非都能从废柴变成救世主，你也行。",
-  "完美人生不是一天建成的，但每一张卡都在打地基。",
-  "今天的你辛苦了，系统批准你早点睡。",
-  "只要还在动，就不算输。卷王之路，一步一个脚印。",
-  "你现在的努力，都会变成将来考场上的底气。",
-  "系统看好你。真的。（这次不毒舌）"
+  "你害怕失败，本质上就是拒绝成功。",
+  "幻想这些，没有一点用处，要时刻保持清醒，脚踏实地。",
+  "敏感，是观察人性的最好武器。",
+  "什么是勇气？就是当你感到害怕时还坚持做下去。",
+  "什么是自制力？就是当你非常想去做某件事时还坚持不去做。",
+  "第一步，放慢自己的脚步。第二步，保持一个平和的心态。第三步，理智思考每一个决定。第四步，学反思提高。",
+  "人与人之间智商的差异很小，性格的差异很大，战胜不了自己，也成就不了自己。",
+  "人最缺少的一种能力就是去改变自己的能力。",
+  "要具备非常的独立思维，千万不要受外界因素影响自己的判断。",
+  "你做错了可你却不承认自己错了，而是把它看成是一种情怀，你的能力太弱有什么资格谈情怀？",
+  "当你还在为错失机会而痛苦不已时，说明你内心还没有做到无我的境界。",
+  "遇到任何事情都要保持理智，一颗清醒的头脑比什么都重要。",
+  "为什么知行合一很难？这主要是对行所带来的结果没有深刻的认识。",
+  "做任何事的前提是自己关心的人生活不会因为自己的失败而变差，但会因为自己的成功而变得更好。",
+  "要学会承认自己的不足，要学会看着别人赚钱，要明白世界上自己所能掌握的事很少。",
+  "独立思维是一个以自我中心的思考方式，具备很强独立思维的人，不自我满足，会吸收别人的知识并不断思考创新。",
+  "天性对人的控制力太强了，但只要自己意志坚定是可以克服天性的。",
+  "内心对形式的偏执，就像双眼被黑布蒙住了一样，使我们看不透事物的本质。",
+  "能救我的只有自己，看到这么多时间白白流逝，我对得起它吗？",
+  "埋没天赋的是懒惰，抱着走一步算一步的态度，十年二十年之后都不会有长进。",
+  "饱暖思淫欲，饥寒起盗心。生活太安逸容易让人忘记自己的理想。",
+  "自信是一种魅力。",
+  "自信心的消减需要连续失败来完成，连续失败必然会导致回撤，直到你保持理性为止。",
+  "在市场上能赚钱的有两种人，一种是靠运气一种是靠能力。运气是不能持续的，没必要羡慕。",
+  "埋没天赋的是懒惰，不要因为一时得利就以为将来可以高枕无忧。",
+  "为什么有的人总管不住手？管住手，实际上是控制自己的心。要学会承认自己的不足。",
+  "有的人自我麻痹能力太强，他们就容易安于现状，容易接受自己的失败。",
+  "水平的提升在于反思总结，而不是机械的操作。",
+  "人为什么会感觉痛苦？心理的痛苦来源于现实与期望值之间的落差，落差越大痛苦越大。",
+  "提升认知：一个人的认知决定了他未来的成就，想方设法提升认知。",
+  "及时止损：每当意识到做的不对了，不管沉没成本多大，立刻停止行为。",
+  "立即执行：一旦意识到自己现在应该去做什么，那就立马去做。",
+  "少说话，并不是不说话。面对没有必要的人，不需要说，少说少错，多说多错。",
+  "时刻提醒自己保持冷静，万物为刍狗。",
+  "我自苍穹之上而来，自当泯灭众生。",
+  "你的灵魂令死神颤抖，你的意志令恶魔恐惧，你将一次次从地狱爬出来。",
+  "击碎命运的诅咒，这才是真正的我。",
+  "作为王的宿命，便是独自扛起这残破的世界，不寻求任何人的谅解。",
+  "如此超脱世俗，不免有些孤独。",
+  "世界上所有的不利因素都是由于当事人能力不足造成的。",
+  "三十年河东，三十年河西，莫欺少年穷。",
+  "凡夫俗子岂识我？非到末路不甘休。",
+  "鹰击长空鲸霸海，不试怎知龙与蚯？",
+  "你的层次太低了。",
+  "人难免会犯错。没关系，但我不会，因为我是神。",
+  "曲折穷途天地窄，重重灾劫生死危。身如柳絮随风扬，无论云泥意贯一。",
+  "早岁已知世事艰，仍许飞鸿荡云间。一路寒风身如絮，命海沉浮客独行。",
+  "万丈红尘缤纷彩，天涯云水路遥长。此刻风流归天地，不胜水中明月光。",
+  "千古地仙随风逝，昔日三王归青冢。阳莽憾陨谁无败？卷土重来再称王。",
+  "天河一挂淘龙鱼，逆天独行顾八荒。今日暂且展翼去，明日登仙笞凤凰。",
+  "明枪暗箭交织网，阴谋诡计做算盘。",
+  "青山落日，秋月春风，当真是朝如青丝暮成雪，是非成败转头空。",
+  "他人的忠诚便是对自己的背叛，背叛他人是对自己的忠诚。",
+  "态度是心的面具。",
+  "真正禁锢一个人成就的往往不是天资，而是思想。",
+  "心胸浅薄之人常会因为咒骂而愤怒，因为夸赞而喜悦。但其实这些都不过是旁人对你的看法罢了。",
+  "世界就像牡蛎，任我撬开享用。",
+  "反正人们就像是鸽子，一只往右飞，全部都往右飞。",
+  "掩饰情绪：明明清楚的知道，自己的情绪显露会恶化关系，可为什么还一直控制不住呢？"
 ];
+
 function showRandomQuote() {
   const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-  showModal("🎲 系统语录", "系统有话说", "", q, "收下了 😤");
+  showModal("🎲 知行语录", "系统有话说", "", q, "收下了 😤");
 }
 
 /* ================= 每日结算评价 ================= */
@@ -908,15 +1049,17 @@ function dailyReview(scores, items) {
   const words = Number(items.skill_writing) || 0;
   if (words >= 16000) parts.push(`写作 ${words} 字，键盘都要冒火星了，稿费收割机`);
   else if (words >= 12000) parts.push(`写作 ${words} 字，码字小钢炮，超额完成任务`);
-  else if (words >= 8000) parts.push(`写作 ${words} 字，底线守住，像个战士`);
-  else if (words > 0) parts.push(`写作 ${words} 字，离 8000 还差一截，系统替你捏把汗`);
-  else parts.push(`一个字没写，你的笔在哭泣，8000 字的底线被你踩在脚下`);
+  else if (words >= 8000) parts.push(`写作 ${words} 字，笔耕不辍，像个修仙者`);
+  else if (words > 0) parts.push(`写作 ${words} 字，系统鼓励你多写多赚分`);
+  else parts.push(`一个字没写，你的笔在哭泣`);
   const posts = Number(items.skill_post) || 0;
   if (posts >= 2) parts.push(`支付宝帖子 ${posts} 篇，笔耕不辍，铁饭碗在路上`);
   else if (posts > 0) parts.push(`帖子才 ${posts} 篇？不足 2 篇整项归零，血亏`);
   else parts.push(`帖子一篇没发，硬性底线直接躺平`);
-  if (items.body_gym) parts.push(`撸铁打卡，肌肉在生长，懒惰在逃亡`);
-  else parts.push(`没去健身，赘肉在暗喜，它今天赢了`);
+  if (items.body_gym) parts.push(`今日活动达标，身体在变强`);
+  else parts.push(`没怎么动，肉体在偷懒，灵魂也在偷懒`);
+  if (items.body_eyes) parts.push(`护眼了，眼睛感谢你，明天继续刷题不瞎`);
+  if (items.body_shower) parts.push(`洗浴了，身心清爽，一天的精神都回来了`);
   if (items.body_nosnack) parts.push(`戒零食成功，意志力 +100`);
   else parts.push(`零食破戒？你的腹肌在闹离婚`);
   const water = Number(items.body_water) || 0;
@@ -928,6 +1071,11 @@ function dailyReview(scores, items) {
   if (items.charm_speech) parts.push(`忍住了一次吐槽，境界 +1，你正在变成情绪的主人`);
   if (items.charm_wakeup) parts.push(`准时起床，战胜了被窝这个魔王`);
   if (items.charm_praise) parts.push(`今天赞美了别人，情商在线，社交分拉满`);
+  if (items.charm_dress) parts.push(`今天穿搭得体，气质这块拿捏住了`);
+  if (items.charm_selfctrl) parts.push(`克己成功，今天的你战胜了欲望——强者恒强`);
+  else if (items.charm_selfctrl === false) parts.push(`克己失败，又被欲望打败了...明天重新来过`);
+  if (items.charm_anger) parts.push(`制怒成功，今天的你没有发脾气——心性又进一步`);
+  else if (items.charm_anger === false) parts.push(`制怒失败，今天没控制住脾气。下次一定忍住`);
 
   let verdict;
   if (total >= 5) verdict = `今日评级 S — 完美人生系统运转良好，你就是行走的传说`;
@@ -937,7 +1085,7 @@ function dailyReview(scores, items) {
   else if (total >= 0) verdict = `今日评级 D — 半摸鱼状态，系统决定再给你一次机会`;
   else verdict = `今日评级 F — 零分战士！连系统都替你脸红，明天重新做人`;
 
-  const isMiss = (p) => /没|才学|才喝|才写|差|破戒|躺平|不足|没去|一滴/.test(p);
+  const isMiss = (p) => /没|才学|才喝|才写|差|破戒|躺平|不足|没去|一滴|失败/.test(p);
   const highlights = parts.filter(p => !isMiss(p));
   const misses = parts.filter(p => isMiss(p));
   const keep = [...highlights.slice(0, 2), ...misses.slice(0, 1)].join("\n") || parts[0];
@@ -952,33 +1100,24 @@ function showModal(glow, title, rank, desc, btnText) {
   document.getElementById("mRank").textContent = rank;
   document.getElementById("mDesc").textContent = desc;
   if (btnText) document.getElementById("mBtn").textContent = btnText;
-  const m = document.getElementById("levelModal");
-  m.hidden = false;
-  m.style.display = "flex";
+  const m = document.getElementById("levelModal"); m.hidden = false; m.style.display = "flex";
 }
 function showLevelUp(level) {
   const r = rankFor(level);
-  showModal("⚡ LEVEL UP ⚡", `Lv.${level}`, `「${r.title}」`, r.desc, "继续变强 💪");
+  showModal("✨ 境界突破 ✨", r.title, `「${realmLabel(level)}」`, r.desc, "继续修炼 💪");
 }
 function showRank() {
   const info = levelsOf(totals());
   const r = rankFor(info.characterLevel);
-  showModal("🔮 当前称号", `Lv.${info.characterLevel}`, `「${r.title}」`, r.desc, "知道了");
+  showModal("🔮 当前境界", realmLabel(info.characterLevel), `「${r.title}」`, r.desc, "知道了");
 }
 function closeModal() {
   const m = document.getElementById("levelModal");
-  m.hidden = true;
-  m.style.display = "none";
-  if (pendingAfterClose) {
-    const r = pendingAfterClose;
-    pendingAfterClose = null;
-    showModal(r.glow, r.title, r.rank, r.desc, r.btn);
-  }
+  m.hidden = true; m.style.display = "none";
+  if (pendingAfterClose) { const r = pendingAfterClose; pendingAfterClose = null; showModal(r.glow, r.title, r.rank, r.desc, r.btn); }
 }
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
-document.getElementById("levelModal").addEventListener("click", (e) => {
-  if (e.target.id === "levelModal") closeModal();
-});
+document.getElementById("levelModal").addEventListener("click", (e) => { if (e.target.id === "levelModal") closeModal(); });
 
 /* ================= 历史记录 ================= */
 function itemMeta(id) {
@@ -991,7 +1130,7 @@ function itemMeta(id) {
 function itemLabel(id, v) {
   const m = itemMeta(id);
   if (!m) return id;
-  if (m.type === "boolean") return `${m.name}：${v ? "✓" : "—"}`;
+  if (m.type === "boolean" || m.type === "discipline") return `${m.name}：${v ? "✓" : "—"}`;
   if (m.type === "skincare") return `${m.name}：早${v && v.m ? "✓" : "—"} 晚${v && v.n ? "✓" : "—"}`;
   if (m.type === "study") return `${m.name}：${v || 0} 小时`;
   if (id === "skill_writing") return `${m.name}：${v || 0} 字`;
@@ -999,83 +1138,40 @@ function itemLabel(id, v) {
   if (id === "body_water") return `${m.name}：${v || 0} ml`;
   return `${m.name}：${v}`;
 }
-
 function toggleHistory() {
-  const panel = document.getElementById("historyPanel");
-  const btn = document.getElementById("histBtn");
-  if (panel.hidden) {
-    renderHistory();
-    panel.hidden = false;
-    btn.textContent = "📅 收起历史";
-  } else {
-    panel.hidden = true;
-    btn.textContent = "📅 历史";
-  }
+  const p = document.getElementById("historyPanel");
+  const b = document.getElementById("histBtn");
+  if (p.hidden) { renderHistory(); p.hidden = false; b.textContent = "📅 收起历史"; } else { p.hidden = true; b.textContent = "📅 历史"; }
 }
-
 function renderHistory() {
   const panel = document.getElementById("historyPanel");
-  const tot = totals();
-  const info = levelsOf(tot);
+  const tot = totals(); const info = levelsOf(tot);
   const dates = Object.keys(state.history).sort().reverse();
-  let html = `<h3>📜 历史存档（${dates.length} 天）· 累计：体魄 ${fmt(tot.body)} · 学识 ${fmt(tot.knowledge)} · 技能 ${fmt(tot.skill)} · 魅力 ${fmt(tot.charm)} · 角色 Lv.${info.characterLevel}「${rankFor(info.characterLevel).title}」</h3>`;
-  if (!dates.length) {
-    html += `<div class="hint">还没有存档记录。勾选今天的项目后点击「结算今日得分」即可存档。</div>`;
-  }
+  let html = `<h3>📜 修炼日志（${dates.length} 天）· 累计：体魄 ${fmt(tot.body)} · 学识 ${fmt(tot.knowledge)} · 技能 ${fmt(tot.skill)} · 魅力 ${fmt(tot.charm)} · 境界 ${realmLabel(info.characterLevel)}「${rankFor(info.characterLevel).title}」</h3>`;
+  if (!dates.length) html += `<div class="hint">还没有修炼记录。</div>`;
   for (const d of dates) {
-    const e = state.history[d];
-    const s = e.scores;
-    const line = s
-      ? `体<b>${fmt(s.body)}</b> · 学<b>${fmt(s.knowledge)}</b> · 技<b>${fmt(s.skill)}</b> · 魅<b>${fmt(s.charm)}</b>`
-      : `<span style="color:var(--dim)">未结算</span>`;
+    const e = state.history[d]; const s = e.scores;
+    const line = s ? `体<b>${fmt(s.body)}</b> · 学<b>${fmt(s.knowledge)}</b> · 技<b>${fmt(s.skill)}</b> · 魅<b>${fmt(s.charm)}</b>` : `<span style="color:var(--dim)">未结算</span>`;
     const reviewTxt = e.review && e.review.title ? ` · ${e.review.rank}` : "";
-    const detailItems = e.items ? Object.entries(e.items)
-      .filter(([id, v]) => {
-        const m = itemMeta(id);
-        if (!m) return false;
-        if (m.type === "boolean") return !!v;
-        if (m.type === "skincare") return !!(v && (v.m || v.n));
-        return Number(v) > 0;
-      })
-      .map(([id, v]) => `<span class="hist-tag done">${itemLabel(id, v)}</span>`).join("")
-      : "";
-    html += `<div class="hist-row" onclick="toggleHistDetail('${d}')" style="cursor:pointer" title="点击展开当天明细">
-      <span class="hist-date">${d}</span>
-      <span class="hist-scores">${line}</span>
-      <span class="hist-flag ${e.settled ? "on" : "off"}">${e.settled ? "✓ 已结算" : "未结算"}${reviewTxt}</span>
-    </div>`;
-    html += `<div class="hist-detail" id="histd_${d}" hidden>${detailItems || '<span style="color:var(--dim)">（无打卡明细）</span>'}</div>`;
+    const detailItems = e.items ? Object.entries(e.items).filter(([id, v]) => { const m = itemMeta(id); if (!m) return false; if (m.type === "boolean" || m.type === "discipline") return true; if (m.type === "skincare") return !!(v && (v.m || v.n)); return Number(v) > 0; }).map(([id, v]) => `<span class="hist-tag done">${itemLabel(id, v)}</span>`).join("") : "";
+    html += `<div class="hist-row" onclick="toggleHistDetail('${d}')" style="cursor:pointer"><span class="hist-date">${d}</span><span class="hist-scores">${line}</span><span class="hist-flag ${e.settled ? "on" : "off"}">${e.settled ? "✓ 已结算" : "未结算"}${reviewTxt}</span></div><div class="hist-detail" id="histd_${d}" hidden>${detailItems || '<span style="color:var(--dim)">（无打卡明细）</span>'}</div>`;
   }
   panel.innerHTML = html;
 }
-function toggleHistDetail(d) {
-  const el = document.getElementById(`histd_${d}`);
-  if (el) el.hidden = !el.hidden;
-}
+function toggleHistDetail(d) { const el = document.getElementById(`histd_${d}`); if (el) el.hidden = !el.hidden; }
 
 function resetAll() {
-  if (confirm("确定清空全部数据？（历史存档、属性点、等级、成就、目标日期将全部永久删除）")) {
+  if (confirm("确定清空全部数据？（所有数据将永久删除）")) {
     localStorage.removeItem(KEY);
-    state = { history: {} };
-    document.getElementById("weekPanel").hidden = true;
-    document.getElementById("achPanel").hidden = true;
-    document.getElementById("historyPanel").hidden = true;
-    document.getElementById("weekBtn").textContent = "📊 统计雷达";
-    document.getElementById("achBtn").textContent = "🏆 成就";
-    document.getElementById("histBtn").textContent = "📅 历史";
+    state = { history: {}, dataVersion: DATA_VERSION, spiritStones: 110000, streakRewards: [], bonusPoints: { body: 0, knowledge: 0, skill: 0, charm: 0 } };
+    document.getElementById("weekPanel").hidden = true; document.getElementById("achPanel").hidden = true; document.getElementById("historyPanel").hidden = true;
+    document.getElementById("weekBtn").textContent = "📊 统计雷达"; document.getElementById("achBtn").textContent = "🏆 成就"; document.getElementById("histBtn").textContent = "📅 历史";
     render();
   }
 }
 
 /* ================= 启动 ================= */
 render();
-
-// PWA：注册 Service Worker（离线可用 + 可安装到手机主屏幕）
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => { /* 静默失败，不影响使用 */ });
-  });
-}
 </script>
 </body>
 </html>
