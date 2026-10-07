@@ -124,6 +124,45 @@
   .danger-btn { color: var(--red); }
   .danger-btn:hover { border-color: var(--red); }
 
+  .realm-progress {
+    margin: 4px 0 0;
+    padding: 6px 10px 8px;
+    background: rgba(255,255,255,.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+  }
+  .realm-progress .rp-head {
+    display: flex; justify-content: space-between;
+    font-size: 11px; font-weight: 600; margin-bottom: 2px;
+  }
+  .realm-progress .rp-head .cur { color: var(--gold); }
+  .realm-progress .rp-head .nxt { color: var(--dim); }
+  .realm-progress .rp-head .arr { color: var(--dim); margin: 0 2px; }
+  .realm-progress-bar-wrap {
+    height: 12px; background: #21262d; border-radius: 99px;
+    overflow: hidden; margin: 3px 0; position: relative;
+  }
+  .realm-progress-bar-wrap .fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, #2ea043, #3fb950);
+    transition: width .6s ease;
+  }
+  .realm-progress-bar-wrap .fill.full {
+    background: linear-gradient(90deg, #ffd33d, #ff9f43, #ff6b6b);
+    animation: rpPulse 1.5s ease infinite;
+  }
+  @keyframes rpPulse { 0%,100% { opacity: 1; } 50% { opacity: .65; } }
+  .realm-progress-pct {
+    font-size: 12px; font-weight: 700; color: var(--gold); letter-spacing: 0; margin-top: 0;
+  }
+  .realm-today {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--dim); margin-top: 4px; padding-top: 4px;
+    border-top: 1px dashed rgba(48,54,61,.4);
+  }
+  .realm-today b { color: var(--text); }
+
   .panel { margin-top: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
   .panel h3 { font-size: 14px; margin-bottom: 10px; color: var(--dim); font-weight: 600; }
 
@@ -188,6 +227,7 @@
   }
   .modal-rank { font-size: 19px; font-weight: 800; color: var(--gold); margin: 6px 0 12px; }
   .modal-desc { font-size: 14px; color: var(--dim); line-height: 1.8; margin-bottom: 22px; white-space: pre-line; }
+  .modal-desc.quote { font-size: 17px; color: var(--text); line-height: 1.9; }
   .modal button {
     background: linear-gradient(135deg, #238636, #2ea043); color: #fff; border: none;
     padding: 11px 34px; border-radius: 999px; font-size: 14px; font-weight: 700; cursor: pointer; transition: .2s;
@@ -208,6 +248,20 @@
     <div class="badge badge-spirit" id="spiritBadge" onclick="setSpiritStones()" title="点击修改灵石总量">💎 110,000（×1.0）</div>
     <div class="badge badge-exam" id="examBadge" onclick="setExamDate()" title="点击设置/修改上岸目标日期">🎯 设个上岸目标</div>
     <div class="today-score">今日得分 <b id="todayTotal">0</b></div>
+  </div>
+  <div class="realm-progress">
+    <div class="rp-head">
+      <span class="cur" id="rpCurrent">凡人</span>
+      <span><span class="arr">→</span><span class="nxt" id="rpNext">炼气</span></span>
+    </div>
+    <div class="realm-progress-bar-wrap">
+      <div class="fill" id="rpFill" style="width:0%"></div>
+    </div>
+    <div class="realm-progress-pct" id="rpPct">0%</div>
+    <div class="realm-today">
+      <span>今日得分</span>
+      <span><b id="rpTodayScore">0</b></span>
+    </div>
   </div>
   <div class="level-rule">修炼规则：四属性各满 30 点升 1 层（每10层突破大境界）。完整境界：凡人→炼气→筑基→金丹→元婴→化神→炼虚→合体→大乘→渡劫→飞升</div>
 </header>
@@ -272,7 +326,8 @@ const CONFIG = {
           pointsPerHour: 0.5,
           rule: "每学满1小时打卡1次 +0.5；多学多加分，上不封顶（学2h=2次卡+1.0）" },
         { id: "know_english",  name: "学习英语",           points: 0.25, type: "boolean" },
-        { id: "know_read",     name: "阅读30分钟（可选）",    points: 0.25, type: "boolean" }
+        { id: "know_read",     name: "阅读30分钟（可选）",    points: 0.25, type: "boolean" },
+        { id: "know_memory",  name: "背诵/记忆训练",          points: 0.3, type: "boolean" }
       ]
     },
     skill: {
@@ -284,10 +339,8 @@ const CONFIG = {
           maxPoints: null,
           formula: "每写2000字+0.15，上不封顶，不扣分"
         },
-        { id: "skill_post", name: "支付宝帖子2篇（硬性）", type: "progress", unit: "篇",
-          dailyRequirement: 2, points: 0.3,
-          rule: "不足2篇该项记0，不给部分分" },
         { id: "skill_review",  name: "每日复盘+明日计划", points: 0.25, type: "boolean" },
+        { id: "skill_money",  name: "研究了赚钱渠道/副业",  points: 0.5, type: "boolean" },
         { id: "skill_practice",name: "刻意练习（可选）",    points: 0.5, type: "boolean" }
       ]
     },
@@ -416,10 +469,6 @@ function calcItemScore(item, value) {
       const words = Number(value) || 0;
       const steps = Math.floor(words / 2000);
       return item.pointsPerStep * steps;
-    }
-    if (item.id === "skill_post") {
-      const n = Number(value) || 0;
-      return n >= item.dailyRequirement ? item.points : 0;
     }
     if (item.id === "body_water") {
       const v = Number(value) || 0;
@@ -604,6 +653,8 @@ function render() {
   }
 
   updateScores();
+  // 大境界突破进度条
+  updateRealmProgress();
 }
 
 function updateScores() {
@@ -632,6 +683,33 @@ function updateScores() {
   const tEl = document.getElementById("todayTotal");
   tEl.textContent = scoreText(Math.round(total * 1000) / 1000);
   tEl.className = scoreClass(total);
+}
+
+/* ================= 大境界突破进度 ================= */
+function updateRealmProgress() {
+  const tot = totals();
+  // 加上今日未结算的临时分数（勾了但还没点结算也算）
+  const entry = todayEntry();
+  if (!entry.settled && entry.items) {
+    const tmp = computeScores(entry.items);
+    for (const k in tot) tot[k] += tmp[k] || 0;
+  }
+  const info = levelsOf(tot);
+  const cl = info.characterLevel;
+  const minAttr = Math.min(tot.body, tot.knowledge, tot.skill, tot.charm);
+  const currentLevelPts = minAttr - (cl * 30);
+  const pct = Math.min(100, (currentLevelPts / 30) * 100);
+  document.getElementById('rpCurrent').textContent = realmLabel(cl);
+  document.getElementById('rpNext').textContent = realmLabel(cl + 1);
+  document.getElementById('rpPct').textContent = pct.toFixed(1) + '%';
+  const fill = document.getElementById('rpFill');
+  fill.style.width = Math.round(pct) + '%';
+  fill.classList.toggle('full', pct >= 100);
+  // 今日得分
+  const todayScores = computeScores(todayEntry().items || {});
+  const todayTotal = todayScores.body + todayScores.knowledge + todayScores.skill + todayScores.charm;
+  const tsEl = document.getElementById('rpTodayScore');
+  if (tsEl) tsEl.textContent = scoreText(Math.round(todayTotal * 1000) / 1000);
 }
 
 /* ================= 交互 ================= */
@@ -1035,7 +1113,7 @@ const QUOTES = [
 
 function showRandomQuote() {
   const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-  showModal("🎲 知行语录", "系统有话说", "", q, "收下了 😤");
+  showModal("🎲 知行语录", "", "", q, "收下了 😤");
 }
 
 /* ================= 每日结算评价 ================= */
@@ -1054,10 +1132,6 @@ function dailyReview(scores, items) {
   else if (words >= 8000) parts.push(`写作 ${words} 字，笔耕不辍，像个修仙者`);
   else if (words > 0) parts.push(`写作 ${words} 字，系统鼓励你多写多赚分`);
   else parts.push(`一个字没写，你的笔在哭泣`);
-  const posts = Number(items.skill_post) || 0;
-  if (posts >= 2) parts.push(`支付宝帖子 ${posts} 篇，笔耕不辍，铁饭碗在路上`);
-  else if (posts > 0) parts.push(`帖子才 ${posts} 篇？不足 2 篇整项归零，血亏`);
-  else parts.push(`帖子一篇没发，硬性底线直接躺平`);
   if (items.body_gym) parts.push(`今日活动达标，身体在变强`);
   else parts.push(`没怎么动，肉体在偷懒，灵魂也在偷懒`);
   if (items.body_eyes) parts.push(`护眼了，眼睛感谢你，明天继续刷题不瞎`);
@@ -1097,9 +1171,12 @@ function dailyReview(scores, items) {
 /* ================= 弹窗 ================= */
 let pendingAfterClose = null;
 function showModal(glow, title, rank, desc, btnText) {
-  document.getElementById("mGlow").textContent = glow;
-  document.getElementById("mTitle").textContent = title;
-  document.getElementById("mRank").textContent = rank;
+  const mGlow = document.getElementById("mGlow");
+  const mTitle = document.getElementById("mTitle");
+  const mRank = document.getElementById("mRank");
+  mGlow.textContent = glow; mGlow.style.display = glow ? '' : 'none';
+  mTitle.textContent = title; mTitle.style.display = title ? '' : 'none';
+  mRank.textContent = rank; mRank.style.display = rank ? '' : 'none';
   document.getElementById("mDesc").textContent = desc;
   if (btnText) document.getElementById("mBtn").textContent = btnText;
   const m = document.getElementById("levelModal"); m.hidden = false; m.style.display = "flex";
@@ -1136,7 +1213,6 @@ function itemLabel(id, v) {
   if (m.type === "skincare") return `${m.name}：早${v && v.m ? "✓" : "—"} 晚${v && v.n ? "✓" : "—"}`;
   if (m.type === "study") return `${m.name}：${v || 0} 小时`;
   if (id === "skill_writing") return `${m.name}：${v || 0} 字`;
-  if (id === "skill_post") return `${m.name}：${v || 0} 篇`;
   if (id === "body_water") return `${m.name}：${v || 0} ml`;
   return `${m.name}：${v}`;
 }
